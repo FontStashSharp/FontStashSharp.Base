@@ -1,6 +1,6 @@
 ﻿using FontStashSharp.Interfaces;
 
-namespace FontStashSharp
+namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 {
 	public class StbTrueTypeSharpLoader : IFontLoader
 	{

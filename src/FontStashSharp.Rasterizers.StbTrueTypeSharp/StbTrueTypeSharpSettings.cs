@@ -1,4 +1,4 @@
-﻿namespace FontStashSharp
+﻿namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 {
 	public struct StbTrueTypeSharpSettings
 	{

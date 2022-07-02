@@ -2,7 +2,7 @@
 using System;
 using static StbTrueTypeSharp.StbTrueType;
 
-namespace FontStashSharp
+namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 {
 	internal unsafe class StbTrueTypeSharpSource : IFontSource
 	{

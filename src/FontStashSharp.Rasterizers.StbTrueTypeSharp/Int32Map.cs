@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace FontStashSharp
+namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 {
 	class ThrowHelper
 	{
