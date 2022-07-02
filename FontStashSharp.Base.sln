@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FontStashSharp.Base", "src\FontStashSharp.Base.csproj", "{DCD2FF55-7736-4BBE-B777-A3D611C310B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FontStashSharp.Base", "src\FontStashSharp.Base\FontStashSharp.Base.csproj", "{E83EF1DB-805B-4E31-BAE8-883E9E58BDF8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FontStashSharp.Rasterizers.FreeType", "src\FontStashSharp.Rasterizers.FreeType\FontStashSharp.Rasterizers.FreeType.csproj", "{85E8DF07-C87D-4330-9AAA-E2D53DE5318B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FontStashSharp.Rasterizers.SixLabors.Fonts", "src\FontStashSharp.Rasterizers.SixLabors.Fonts\FontStashSharp.Rasterizers.SixLabors.Fonts.csproj", "{F89EFD9F-A061-4183-9CA7-D1C08FB5FDF8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FontStashSharp.Rasterizers.StbTrueTypeSharp", "src\FontStashSharp.Rasterizers.StbTrueTypeSharp\FontStashSharp.Rasterizers.StbTrueTypeSharp.csproj", "{D935B0D1-32AA-40A4-91BB-01B68315282E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +17,22 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DCD2FF55-7736-4BBE-B777-A3D611C310B5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DCD2FF55-7736-4BBE-B777-A3D611C310B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DCD2FF55-7736-4BBE-B777-A3D611C310B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DCD2FF55-7736-4BBE-B777-A3D611C310B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E83EF1DB-805B-4E31-BAE8-883E9E58BDF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E83EF1DB-805B-4E31-BAE8-883E9E58BDF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E83EF1DB-805B-4E31-BAE8-883E9E58BDF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E83EF1DB-805B-4E31-BAE8-883E9E58BDF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85E8DF07-C87D-4330-9AAA-E2D53DE5318B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85E8DF07-C87D-4330-9AAA-E2D53DE5318B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85E8DF07-C87D-4330-9AAA-E2D53DE5318B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85E8DF07-C87D-4330-9AAA-E2D53DE5318B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F89EFD9F-A061-4183-9CA7-D1C08FB5FDF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F89EFD9F-A061-4183-9CA7-D1C08FB5FDF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F89EFD9F-A061-4183-9CA7-D1C08FB5FDF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F89EFD9F-A061-4183-9CA7-D1C08FB5FDF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D935B0D1-32AA-40A4-91BB-01B68315282E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D935B0D1-32AA-40A4-91BB-01B68315282E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D935B0D1-32AA-40A4-91BB-01B68315282E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D935B0D1-32AA-40A4-91BB-01B68315282E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

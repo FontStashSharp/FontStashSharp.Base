@@ -21,4 +21,10 @@ jobs:
     - name: Install NuGet
       uses: NuGet/setup-nuget@v1
     - name: Publish FontStashSharp.Base to NuGet
-      run: nuget.exe push src\bin\Release\FontStashSharp.Base.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+      run: nuget.exe push src\FontStashSharp.Base\bin\Release\FontStashSharp.Base.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+    - name: Publish FontStashSharp.Rasterizers.StbTrueTypeSharp to NuGet
+      run: nuget.exe push src\FontStashSharp.Rasterizers.StbTrueTypeSharp\bin\Release\FontStashSharp.Rasterizers.StbTrueTypeSharp.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+    - name: Publish FontStashSharp.Rasterizers.FreeTypeSharp to NuGet
+      run: nuget.exe push src\FontStashSharp.Rasterizers.FreeTypeSharp\bin\Release\FontStashSharp.Rasterizers.FreeTypeSharp.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+    - name: Publish FontStashSharp.Rasterizers.SixLabors.Fonts to NuGet
+      run: nuget.exe push src\FontStashSharp.Rasterizers.SixLabors.Fonts\bin\Release\FontStashSharp.Rasterizers.SixLabors.Fonts.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json

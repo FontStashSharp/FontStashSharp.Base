@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <Authors>FontStashSharpTeam</Authors>
+    <Product>FontStashSharp</Product>
+    <PackageLicenseExpression>Zlib</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/FontStashSharp/FontStashSharp</PackageProjectUrl>
+    <RootNamespace>FontStashSharp</RootNamespace>
+    <Version>1.1.6</Version>
+  </PropertyGroup>
+</Project>
