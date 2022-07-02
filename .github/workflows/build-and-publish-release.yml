@@ -22,9 +22,13 @@ jobs:
       uses: NuGet/setup-nuget@v1
     - name: Publish FontStashSharp.Base to NuGet
       run: nuget.exe push src\FontStashSharp.Base\bin\Release\FontStashSharp.Base.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+      continue-on-error: true
     - name: Publish FontStashSharp.Rasterizers.StbTrueTypeSharp to NuGet
       run: nuget.exe push src\FontStashSharp.Rasterizers.StbTrueTypeSharp\bin\Release\FontStashSharp.Rasterizers.StbTrueTypeSharp.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+      continue-on-error: true
     - name: Publish FontStashSharp.Rasterizers.FreeType to NuGet
       run: nuget.exe push src\FontStashSharp.Rasterizers.FreeType\bin\Release\FontStashSharp.Rasterizers.FreeType.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+      continue-on-error: true
     - name: Publish FontStashSharp.Rasterizers.SixLabors.Fonts to NuGet
       run: nuget.exe push src\FontStashSharp.Rasterizers.SixLabors.Fonts\bin\Release\FontStashSharp.Rasterizers.SixLabors.Fonts.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+      continue-on-error: true
