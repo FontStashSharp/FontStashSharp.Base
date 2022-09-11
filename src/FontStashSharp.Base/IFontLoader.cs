@@ -11,7 +11,7 @@ namespace FontStashSharp.Interfaces
 		/// <param name="ascent"></param>
 		/// <param name="descent"></param>
 		/// <param name="lineHeight"></param>
-		void GetMetricsForSize(int fontSize, out int ascent, out int descent, out int lineHeight);
+		void GetMetricsForSize(float fontSize, out int ascent, out int descent, out int lineHeight);
 
 		/// <summary>
 		/// Returns Id of a glyph corresponding to a codepoint
@@ -31,7 +31,7 @@ namespace FontStashSharp.Interfaces
 		/// <param name="y0"></param>
 		/// <param name="x1"></param>
 		/// <param name="y1"></param>
-		void GetGlyphMetrics(int glyphId, int fontSize, out int advance, out int x0, out int y0, out int x1, out int y1);
+		void GetGlyphMetrics(int glyphId, float fontSize, out int advance, out int x0, out int y0, out int x1, out int y1);
 
 		/// <summary>
 		/// Renders a glyph 
@@ -42,7 +42,7 @@ namespace FontStashSharp.Interfaces
 		/// <param name="outWidth"></param>
 		/// <param name="outHeight"></param>
 		/// <param name="outStride"></param>
-		void RasterizeGlyphBitmap(int glyphId, int fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride);
+		void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride);
 
 		/// <summary>
 		/// Returns kerning
@@ -51,7 +51,7 @@ namespace FontStashSharp.Interfaces
 		/// <param name="glyphId"></param>
 		/// <param name="fontSize"></param>
 		/// <returns></returns>
-		int GetGlyphKernAdvance(int previousGlyphId, int glyphId, int fontSize);
+		int GetGlyphKernAdvance(int previousGlyphId, int glyphId, float fontSize);
 	}
 
 	/// <summary>

@@ -36,13 +36,13 @@ namespace FontStashSharp.Rasterizers.SixLabors.Fonts
 			return codepoint;
 		}
 
-		public int GetGlyphKernAdvance(int previousGlyphId, int glyphId, int fontSize)
+		public int GetGlyphKernAdvance(int previousGlyphId, int glyphId, float fontSize)
 		{
 			var kerning = _source.GetKerning(fontSize, previousGlyphId, glyphId);
 			return (int)kerning.X;
 		}
 
-		public void GetGlyphMetrics(int glyphId, int fontSize, out int advance, out int x0, out int y0, out int x1, out int y1)
+		public void GetGlyphMetrics(int glyphId, float fontSize, out int advance, out int x0, out int y0, out int x1, out int y1)
 		{
 			var path = _source.CreatePath(fontSize, glyphId);
 
@@ -53,14 +53,14 @@ namespace FontStashSharp.Rasterizers.SixLabors.Fonts
 			y1 = path.Bounds.Bottom;
 		}
 
-		public void GetMetricsForSize(int fontSize, out int ascent, out int descent, out int lineHeight)
+		public void GetMetricsForSize(float fontSize, out int ascent, out int descent, out int lineHeight)
 		{
 			ascent = (int)(fontSize * AscentBase + 0.5f);
 			descent = (int)(fontSize * DescentBase - 0.5f);
 			lineHeight = (int)(fontSize * LineHeightBase + 0.5f);
 		}
 
-		public void RasterizeGlyphBitmap(int glyphId, int fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
+		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
 		{
 			var path = _source.CreatePath(fontSize, glyphId);
 			Image<Rgba32> image = new Image<Rgba32>(path.Bounds.Width, path.Bounds.Height);

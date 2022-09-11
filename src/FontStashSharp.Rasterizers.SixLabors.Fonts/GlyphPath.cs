@@ -5,7 +5,7 @@ namespace FontStashSharp.Samples.SixLabors
 {
 	internal class GlyphPath
 	{
-		public int Size;
+		public float Size;
 		public int Codepoint;
 		public Rectangle Bounds;
 		public IPathCollection Paths;

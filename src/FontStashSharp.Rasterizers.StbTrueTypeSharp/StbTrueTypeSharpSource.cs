@@ -53,9 +53,9 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 			GC.SuppressFinalize(this);
 		}
 
-		private float CalculateScale(int size) => stbtt_ScaleForPixelHeight(_font, size);
+		private float CalculateScale(float size) => stbtt_ScaleForPixelHeight(_font, size);
 
-		public void GetMetricsForSize(int fontSize, out int ascent, out int descent, out int lineHeight)
+		public void GetMetricsForSize(float fontSize, out int ascent, out int descent, out int lineHeight)
 		{
 			var scale = CalculateScale(fontSize);
 			ascent = (int)(_ascent * scale + 0.5f);
@@ -74,7 +74,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 			return result;
 		}
 
-		public void GetGlyphMetrics(int glyphId, int fontSize, out int advance, out int x0, out int y0, out int x1, out int y1)
+		public void GetGlyphMetrics(int glyphId, float fontSize, out int advance, out int x0, out int y0, out int x1, out int y1)
 		{
 			var scale = CalculateScale(fontSize);
 
@@ -90,7 +90,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 			y1 = y1Temp + _settings.KernelHeight;
 		}
 
-		public void RasterizeGlyphBitmap(int glyphId, int fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
+		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
 		{
 			var scale = CalculateScale(fontSize);
 
@@ -104,7 +104,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 			}
 		}
 
-		public int GetGlyphKernAdvance(int glyph1, int glyph2, int fontSize)
+		public int GetGlyphKernAdvance(int glyph1, int glyph2, float fontSize)
 		{
 			var scale = CalculateScale(fontSize);
 

@@ -73,7 +73,7 @@ namespace FontStashSharp.Rasterizers.FreeType
 			return (int?)result;
 		}
 
-		public int GetGlyphKernAdvance(int previousGlyphId, int glyphId, int fontSize)
+		public int GetGlyphKernAdvance(int previousGlyphId, int glyphId, float fontSize)
 		{
 			FT_Vector kerning;
 			if (FT.FT_Get_Kerning(_faceHandle, (uint)previousGlyphId, (uint)glyphId, 0, out kerning) != FT_Error.FT_Err_Ok)
@@ -84,7 +84,7 @@ namespace FontStashSharp.Rasterizers.FreeType
 			return (int)kerning.x >> 6;
 		}
 
-		private void SetPixelSizes(int width, int height)
+		private void SetPixelSizes(float width, float height)
 		{
 			var err = FT.FT_Set_Pixel_Sizes(_faceHandle, (uint)width, (uint)height);
 			if (err != FT_Error.FT_Err_Ok)
@@ -103,7 +103,7 @@ namespace FontStashSharp.Rasterizers.FreeType
 			glyph = PInvokeHelper.PtrToStructure<FT_GlyphSlotRec>((IntPtr)_rec.glyph);
 		}
 
-		public void GetGlyphMetrics(int glyphId, int fontSize, out int advance, out int x0, out int y0, out int x1, out int y1)
+		public void GetGlyphMetrics(int glyphId, float fontSize, out int advance, out int x0, out int y0, out int x1, out int y1)
 		{
 			SetPixelSizes(0, fontSize);
 			LoadGlyph(glyphId);
@@ -117,7 +117,7 @@ namespace FontStashSharp.Rasterizers.FreeType
 			y1 = y0 + ((int)glyph.metrics.height >> 6);
 		}
 
-		public unsafe void GetMetricsForSize(int fontSize, out int ascent, out int descent, out int lineHeight)
+		public unsafe void GetMetricsForSize(float fontSize, out int ascent, out int descent, out int lineHeight)
 		{
 			SetPixelSizes(0, fontSize);
 			var sizeRec = PInvokeHelper.PtrToStructure<FT_SizeRec>((IntPtr)_rec.size);
@@ -127,7 +127,7 @@ namespace FontStashSharp.Rasterizers.FreeType
 			lineHeight = (int)sizeRec.metrics.height >> 6;
 		}
 
-		public unsafe void RasterizeGlyphBitmap(int glyphId, int fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
+		public unsafe void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
 		{
 			SetPixelSizes(0, fontSize);
 			LoadGlyph(glyphId);

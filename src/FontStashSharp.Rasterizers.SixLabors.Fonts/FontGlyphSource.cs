@@ -46,7 +46,7 @@ namespace TrippyGL.Fonts.Building
 		/// Creates the <see cref="IPathCollection"/> for all the characters, also getting their colors,
 		/// glyph sizes and render offsets.
 		/// </summary>
-		public GlyphPath CreatePath(int size, int codepoint)
+		public GlyphPath CreatePath(float size, int codepoint)
 		{
 			ColorGlyphRenderer glyphRenderer = new ColorGlyphRenderer();
 			glyphRenderer.Reset();
@@ -76,13 +76,13 @@ namespace TrippyGL.Fonts.Building
 			};
 		}
 
-		public float GetAdvance(int size, int codepoint)
+		public float GetAdvance(float size, int codepoint)
 		{
 			GlyphInstance inst = FontInstance.GetGlyph(codepoint);
 			return inst.AdvanceWidth * size / FontInstance.EmSize;
 		}
 
-		public Vector2 GetKerning(int size, int codepoint1, int codepoint2)
+		public Vector2 GetKerning(float size, int codepoint1, int codepoint2)
 		{
 			GlyphInstance aInstance = FontInstance.GetGlyph(codepoint1);
 			Vector2 offset = FontInstance.GetOffset(FontInstance.GetGlyph(codepoint2), aInstance);
