@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -9,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="StbTrueTypeSharp" Version="1.26.10" />
+    <PackageReference Include="StbTrueTypeSharp" Version="1.26.11" />
   </ItemGroup>
 
   <ItemGroup>
