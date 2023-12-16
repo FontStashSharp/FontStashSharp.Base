@@ -23,6 +23,8 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 			if (_font == null)
 				throw new Exception("stbtt_InitFont failed");
 
+			_font.useOldRasterizer = settings.UseOldRasterizer;
+
 			_settings = settings;
 
 			int ascent, descent, lineGap;
