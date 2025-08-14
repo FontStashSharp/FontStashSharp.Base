@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\StbSharp\StbTrueTypeSharp\src\StbTrueTypeSharp.csproj" />
     <ProjectReference Include="..\FontStashSharp.Base\FontStashSharp.Base.csproj" />
   </ItemGroup>   
 </Project>

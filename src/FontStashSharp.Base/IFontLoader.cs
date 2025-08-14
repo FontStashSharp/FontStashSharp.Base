@@ -45,6 +45,20 @@ namespace FontStashSharp.Interfaces
 		void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride);
 
 		/// <summary>
+		/// Renders a sdf glyph 
+		/// </summary>
+		/// <param name="buffer"></param>
+		/// <param name="fontSize"></param>
+		/// <param name="onEdgeValue"></param>
+		/// <param name="pixelDistScale"></param>
+		/// <param name="startIndex"></param>
+		/// <param name="outWidth"></param>
+		/// <param name="outHeight"></param>
+		/// <param name="outStride"></param>
+		void RasterizeGlyphSDF(int glyphId, float fontSize, int onEdgeValue, float pixelDistScale, 
+			byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride);
+
+		/// <summary>
 		/// Returns kerning
 		/// </summary>
 		/// <param name="previousGlyphId"></param>

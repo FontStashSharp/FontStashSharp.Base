@@ -106,6 +106,14 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 			}
 		}
 
+		public void RasterizeGlyphSDF(int glyphId, float fontSize, int onEdgeValue, float pixelDistScale, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
+		{
+			var scale = CalculateScale(fontSize);
+
+			GetGlyphSDF(_font, scale, glyphId, 0, (byte)onEdgeValue, pixelDistScale,
+				buffer, startIndex, outWidth, outHeight, outStride);
+		}
+
 		public int GetGlyphKernAdvance(int glyph1, int glyph2, float fontSize)
 		{
 			var scale = CalculateScale(fontSize);
