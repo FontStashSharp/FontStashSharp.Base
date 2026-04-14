@@ -1,8 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <Version>1.1.8-beta1</Version>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
   </ItemGroup>
