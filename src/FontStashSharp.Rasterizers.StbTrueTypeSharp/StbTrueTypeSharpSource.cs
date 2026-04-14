@@ -1,6 +1,5 @@
 ﻿using FontStashSharp.Interfaces;
 using System;
-using System.Drawing;
 using static StbTrueTypeSharp.StbTrueType;
 
 namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
