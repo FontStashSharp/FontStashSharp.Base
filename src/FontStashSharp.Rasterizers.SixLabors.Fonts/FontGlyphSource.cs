@@ -12,26 +12,32 @@ using SixLabors.ImageSharp.Processing;
 namespace TrippyGL.Fonts.Building
 {
 	/// <summary>
-	/// An implementation of <see cref="IGlyphSource"/> that sources it's glyphs from
-	/// a <see cref="SixLabors.Fonts"/> font.
+	/// An implementation that sources glyphs from a SixLabors font instance.
 	/// </summary>
 	internal sealed class FontGlyphSource
 	{
 		private const float Dpi = 96;
 		private const float PointsPerInch = 72;
 
-		/// <summary>The <see cref="IFontInstance"/> from which this <see cref="FontGlyphSource"/> gets glyph data.</summary>
+		/// <summary>
+		/// The font instance from which this source gets glyph data.
+		/// </summary>
 		public readonly IFontInstance FontInstance;
 
-		/// <summary>Configuration for how glyphs should be rendered.</summary>
+		/// <summary>
+		/// Configuration for how glyphs should be rendered.
+		/// </summary>
 		public DrawingOptions DrawingOptions;
 
-		/// <summary>Whether to include kerning if present in the font. Default is true.</summary>
+		/// <summary>
+		/// Whether to include kerning if present in the font. Default is true.
+		/// </summary>
 		public bool IncludeKerningIfPresent = true;
 
 		/// <summary>
-		/// Creates a <see cref="FontGlyphSource"/> instance.
+		/// Initializes a new instance of FontGlyphSource.
 		/// </summary>
+		/// <param name="fontInstance">The font instance to use for glyph rendering</param>
 		public FontGlyphSource(IFontInstance fontInstance)
 		{
 			FontInstance = fontInstance ?? throw new ArgumentNullException(nameof(fontInstance));
@@ -43,9 +49,11 @@ namespace TrippyGL.Fonts.Building
 		}
 
 		/// <summary>
-		/// Creates the <see cref="IPathCollection"/> for all the characters, also getting their colors,
-		/// glyph sizes and render offsets.
+		/// Creates the path collection for a glyph with its size, bounds, and colors.
 		/// </summary>
+		/// <param name="size">The font size</param>
+		/// <param name="codepoint">The Unicode codepoint of the glyph</param>
+		/// <returns>A glyph path with rendering information, or null if empty</returns>
 		public GlyphPath CreatePath(float size, int codepoint)
 		{
 			ColorGlyphRenderer glyphRenderer = new ColorGlyphRenderer();
@@ -76,12 +84,25 @@ namespace TrippyGL.Fonts.Building
 			};
 		}
 
+		/// <summary>
+		/// Gets the advance width for a glyph at the specified size.
+		/// </summary>
+		/// <param name="size">The font size</param>
+		/// <param name="codepoint">The Unicode codepoint</param>
+		/// <returns>The advance width at the specified size</returns>
 		public float GetAdvance(float size, int codepoint)
 		{
 			GlyphInstance inst = FontInstance.GetGlyph(codepoint);
 			return inst.AdvanceWidth * size / FontInstance.EmSize;
 		}
 
+		/// <summary>
+		/// Gets the kerning offset between two glyphs.
+		/// </summary>
+		/// <param name="size">The font size</param>
+		/// <param name="codepoint1">The first Unicode codepoint</param>
+		/// <param name="codepoint2">The second Unicode codepoint</param>
+		/// <returns>The kerning offset as a vector</returns>
 		public Vector2 GetKerning(float size, int codepoint1, int codepoint2)
 		{
 			GlyphInstance aInstance = FontInstance.GetGlyph(codepoint1);
@@ -89,6 +110,12 @@ namespace TrippyGL.Fonts.Building
 			return offset * size / FontInstance.EmSize;
 		}
 
+		/// <summary>
+		/// Draws a glyph path to an image at the specified location.
+		/// </summary>
+		/// <param name="glyphPath">The glyph path to draw</param>
+		/// <param name="location">The location in the image to draw at</param>
+		/// <param name="image">The image to draw to</param>
 		public void DrawGlyphToImage(GlyphPath glyphPath, System.Drawing.Point location, Image<Rgba32> image)
 		{
 			var paths = glyphPath.Paths;
@@ -102,8 +129,10 @@ namespace TrippyGL.Fonts.Building
 		}
 
 		/// <summary>
-		/// Draws a collection of paths with the given colors onto the image.
+		/// Draws a collection of paths with their colors onto the image.
 		/// </summary>
+		/// <param name="image">The image to draw to</param>
+		/// <param name="paths">The paths to draw</param>
 		private void DrawColoredPaths(Image<Rgba32> image, IPathCollection paths)
 		{
 			IEnumerator<IPath> pathEnumerator = paths.GetEnumerator();

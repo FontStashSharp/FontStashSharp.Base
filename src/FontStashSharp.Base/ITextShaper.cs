@@ -1,9 +1,30 @@
 ﻿namespace FontStashSharp.Interfaces
 {
+	/// <summary>
+	/// Provides information for text shaping operations
+	/// </summary>
 	public interface ITextShapingInfoProvider
 	{
+		/// <summary>
+		/// Gets the font source ID for a specific codepoint
+		/// </summary>
+		/// <param name="codepoint">The Unicode codepoint to look up</param>
+		/// <returns>The font source ID, or null if not available</returns>
 		int? GetFontSourceId(int codepoint);
+
+		/// <summary>
+		/// Gets the text shaper font ID for a specific font source ID
+		/// </summary>
+		/// <param name="fontSourceId">The font source ID</param>
+		/// <returns>The text shaper font ID</returns>
 		int GetTextShaperFontId(int fontSourceId);
+
+		/// <summary>
+		/// Calculates the scale factor for text shaping
+		/// </summary>
+		/// <param name="fontSourceId">The font source ID</param>
+		/// <param name="fontSize">The desired font size</param>
+		/// <returns>The scale factor to apply</returns>
 		float CalculateScale(int fontSourceId, float fontSize);
 	}
 

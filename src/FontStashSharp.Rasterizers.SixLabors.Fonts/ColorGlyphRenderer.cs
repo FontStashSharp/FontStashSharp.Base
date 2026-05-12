@@ -8,7 +8,7 @@ using SixLabors.ImageSharp.PixelFormats;
 namespace TrippyGL.Fonts.Building
 {
     /// <summary>
-    /// A rendering surface that fonts can use to generate shapes.
+    /// A rendering surface that fonts can use to generate colored glyph shapes.
     /// </summary>
     internal sealed class ColorGlyphRenderer : IColorGlyphRenderer
     {
@@ -27,10 +27,14 @@ namespace TrippyGL.Fonts.Building
             builder = new PathBuilder();
         }
 
-        /// <summary>Get the colors for each path, where null means default color.</summary>
+        /// <summary>
+        /// Gets the colors for each path, where null means default color.
+        /// </summary>
         public Color?[] PathColors => colors.ToArray();
 
-        /// <summary>Gets the paths that have been rendered by this <see cref="ColorGlyphRenderer"/>.</summary>
+        /// <summary>
+        /// Gets the paths that have been rendered by this <see cref="ColorGlyphRenderer"/>.
+        /// </summary>
         public IPathCollection Paths => new PathCollection(paths);
 
         void IGlyphRenderer.EndText() { }

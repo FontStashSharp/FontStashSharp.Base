@@ -5,19 +5,26 @@ using System.Text;
 
 namespace FontStashSharp
 {
+	/// <summary>
+	/// Text shaper implementation using HarfBuzz for advanced text layout
+	/// </summary>
 	public class HarfBuzzTextShaper : ITextShaper
 	{
 		private int _lastId = 0;
 		private readonly Dictionary<int, HarfBuzzFont> _harfBuzzFonts = new Dictionary<int, HarfBuzzFont>();
 
 		/// <summary>
-		/// Enable bidirectional (BiDi) text support for mixed LTR/RTL text
-		/// When enabled, text with mixed Latin and RTL scripts (Arabic, Hebrew, etc.) will be displayed in correct order
-		/// Only applies when UseTextShaping is true
+		/// Gets or sets whether to enable bidirectional (BiDi) text support for mixed LTR/RTL text.
+		/// When enabled, text with mixed Latin and RTL scripts (Arabic, Hebrew, etc.) will be displayed in correct order.
 		/// Default: true
 		/// </summary>
 		public bool EnableBiDi { get; set; } = true;
 
+		/// <summary>
+		/// Registers a TrueType font for use in text shaping
+		/// </summary>
+		/// <param name="data">The font file data (TTF)</param>
+		/// <returns>The assigned font ID for reference</returns>
 		public int RegisterTtfFont(byte[] data)
 		{
 			var hbFont = new HarfBuzzFont(data);
@@ -30,6 +37,10 @@ namespace FontStashSharp
 			return result;
 		}
 
+		/// <summary>
+		/// Removes and disposes a previously registered font
+		/// </summary>
+		/// <param name="id">The font ID to remove</param>
 		public void RemoveFont(int id)
 		{
 			var font = _harfBuzzFonts[id];

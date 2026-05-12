@@ -2,15 +2,27 @@
 
 namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 {
+	/// <summary>
+	/// StbTrueTypeSharp font loader implementation
+	/// </summary>
 	public class StbTrueTypeSharpLoader : IFontLoader
 	{
 		private readonly StbTrueTypeSharpSettings _settings;
 
+		/// <summary>
+		/// Initializes a new instance of StbTrueTypeSharpLoader with specified settings
+		/// </summary>
+		/// <param name="settings">Configuration settings for the font loader</param>
 		public StbTrueTypeSharpLoader(StbTrueTypeSharpSettings settings)
 		{
 			_settings = settings;
 		}
 
+		/// <summary>
+		/// Loads a font from byte data using StbTrueTypeSharp
+		/// </summary>
+		/// <param name="data">The font file data (TTF/OTF)</param>
+		/// <returns>A font source for rendering glyphs</returns>
 		public IFontSource Load(byte[] data)
 		{
 			return new StbTrueTypeSharpSource(data, _settings);
