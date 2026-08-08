@@ -69,7 +69,7 @@ namespace FontStashSharp.Tests
 			var text = "  Hello";
 			var runs = BiDiAnalyzer.SegmentIntoDirectionalRuns(text);
 
-			Assert.Equal(1, runs.Count);
+			Assert.Single(runs);
 			Assert.Equal(TextDirection.LTR, runs[0].Direction);
 			Assert.Equal(0, runs[0].Start);
 			Assert.Equal(text.Length, runs[0].Length);
@@ -82,7 +82,7 @@ namespace FontStashSharp.Tests
 			var text = "   ...   ";
 			var runs = BiDiAnalyzer.SegmentIntoDirectionalRuns(text);
 
-			Assert.Equal(1, runs.Count);
+			Assert.Single(runs);
 			Assert.Equal(TextDirection.LTR, runs[0].Direction);
 		}
 
@@ -94,7 +94,7 @@ namespace FontStashSharp.Tests
 
 			Assert.NotNull(shaped);
 			Assert.NotNull(shaped.Glyphs);
-			Assert.Equal(0, shaped.Glyphs.Length);
+			Assert.Empty(shaped.Glyphs);
 			Assert.Equal("", shaped.OriginalText);
 		}
 
@@ -106,7 +106,7 @@ namespace FontStashSharp.Tests
 
 			Assert.NotNull(shaped);
 			Assert.NotNull(shaped.Glyphs);
-			Assert.Equal(0, shaped.Glyphs.Length);
+			Assert.Empty(shaped.Glyphs);
 			Assert.Equal("", shaped.OriginalText);
 		}
 
