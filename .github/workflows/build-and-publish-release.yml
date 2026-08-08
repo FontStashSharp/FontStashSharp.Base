@@ -29,9 +29,6 @@ jobs:
     - name: Publish FontStashSharp.Rasterizers.FreeType to NuGet
       run: nuget.exe push src\FontStashSharp.Rasterizers.FreeType\bin\Release\FontStashSharp.Rasterizers.FreeType.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
       continue-on-error: true
-    - name: Publish FontStashSharp.Rasterizers.SixLabors.Fonts to NuGet
-      run: nuget.exe push src\FontStashSharp.Rasterizers.SixLabors.Fonts\bin\Release\FontStashSharp.Rasterizers.SixLabors.Fonts.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
-      continue-on-error: true
     - name: Publish FontStashSharp.TextShapers.HarfBuzz to NuGet
       run: nuget.exe push src\FontStashSharp.TextShapers.HarfBuzz\bin\Release\FontStashSharp.TextShapers.HarfBuzz.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
       continue-on-error: true      
