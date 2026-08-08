@@ -29,6 +29,9 @@
 	}
 
 
+	/// <summary>
+	/// Provides text shaping functionality
+	/// </summary>
 	public interface ITextShaper
 	{
 		/// <summary>

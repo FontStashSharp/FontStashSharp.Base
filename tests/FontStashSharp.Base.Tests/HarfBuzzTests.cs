@@ -1,13 +1,12 @@
 ﻿using FontStashSharp.Interfaces;
-using NUnit.Framework;
 using System;
+using Xunit;
 
 namespace FontStashSharp.Tests
 {
-	[TestFixture]
 	public class HarfBuzzTests
 	{
-		private class ShaperWrapper: ITextShapingInfoProvider
+		private class ShaperWrapper : ITextShapingInfoProvider
 		{
 			private readonly HarfBuzzTextShaper _shaper;
 
@@ -29,25 +28,26 @@ namespace FontStashSharp.Tests
 			public ShapedText Shape(string text, float size) => _shaper.Shape(text, size, this);
 		}
 
-		[TestCase("Hello World", 1, TextDirection.LTR)]
-		[TestCase("مرحبا", 1, TextDirection.RTL)]
-		[TestCase("", 0, TextDirection.LTR)]
-		[TestCase("123", 1, TextDirection.LTR)]
+		[Theory]
+		[InlineData("Hello World", 1, TextDirection.LTR)]
+		[InlineData("مرحبا", 1, TextDirection.RTL)]
+		[InlineData("", 0, TextDirection.LTR)]
+		[InlineData("123", 1, TextDirection.LTR)]
 		public void BiDiAnalyzer_SingleDirectionText(string text, int expectedRunCount, TextDirection expectedDirection)
 		{
 			var runs = BiDiAnalyzer.SegmentIntoDirectionalRuns(text);
 
-			Assert.That(runs.Count, Is.EqualTo(expectedRunCount));
+			Assert.Equal(expectedRunCount, runs.Count);
 
 			if (expectedRunCount > 0)
 			{
-				Assert.That(runs[0].Direction, Is.EqualTo(expectedDirection));
-				Assert.That(runs[0].Start, Is.EqualTo(0));
-				Assert.That(runs[0].Length, Is.EqualTo(text.Length));
+				Assert.Equal(expectedDirection, runs[0].Direction);
+				Assert.Equal(0, runs[0].Start);
+				Assert.Equal(text.Length, runs[0].Length);
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void BiDiAnalyzer_MixedLtrRtlText()
 		{
 			// English "Hello" + Arabic "مرحبا"
@@ -55,105 +55,105 @@ namespace FontStashSharp.Tests
 			var runs = BiDiAnalyzer.SegmentIntoDirectionalRuns(text);
 
 			// Should have 2 runs: LTR for "Hello " and RTL for "مرحبا"
-			Assert.That(runs.Count, Is.EqualTo(2));
+			Assert.Equal(2, runs.Count);
 
-			Assert.That(runs[0].Direction, Is.EqualTo(TextDirection.LTR));
-			Assert.That(runs[0].Start, Is.EqualTo(0));
-			Assert.That(runs[1].Direction, Is.EqualTo(TextDirection.RTL));
+			Assert.Equal(TextDirection.LTR, runs[0].Direction);
+			Assert.Equal(0, runs[0].Start);
+			Assert.Equal(TextDirection.RTL, runs[1].Direction);
 		}
 
-		[Test]
+		[Fact]
 		public void BiDiAnalyzer_LeadingNeutralCharacters()
 		{
 			// Spaces before text should be assigned to the following run's direction
 			var text = "  Hello";
 			var runs = BiDiAnalyzer.SegmentIntoDirectionalRuns(text);
 
-			Assert.That(runs.Count, Is.EqualTo(1));
-			Assert.That(runs[0].Direction, Is.EqualTo(TextDirection.LTR));
-			Assert.That(runs[0].Start, Is.EqualTo(0));
-			Assert.That(runs[0].Length, Is.EqualTo(text.Length));
+			Assert.Equal(1, runs.Count);
+			Assert.Equal(TextDirection.LTR, runs[0].Direction);
+			Assert.Equal(0, runs[0].Start);
+			Assert.Equal(text.Length, runs[0].Length);
 		}
 
-		[Test]
+		[Fact]
 		public void BiDiAnalyzer_OnlyNeutralCharacters()
 		{
 			// Text with only neutral characters should default to LTR
 			var text = "   ...   ";
 			var runs = BiDiAnalyzer.SegmentIntoDirectionalRuns(text);
 
-			Assert.That(runs.Count, Is.EqualTo(1));
-			Assert.That(runs[0].Direction, Is.EqualTo(TextDirection.LTR));
+			Assert.Equal(1, runs.Count);
+			Assert.Equal(TextDirection.LTR, runs[0].Direction);
 		}
 
-		[Test]
+		[Fact]
 		public void TextShaper_EmptyString()
 		{
 			var shaper = new ShaperWrapper();
 			var shaped = shaper.Shape("", 32);
 
-			Assert.That(shaped, Is.Not.Null);
-			Assert.That(shaped.Glyphs, Is.Not.Null);
-			Assert.That(shaped.Glyphs.Length, Is.EqualTo(0));
-			Assert.That(shaped.OriginalText, Is.EqualTo(""));
+			Assert.NotNull(shaped);
+			Assert.NotNull(shaped.Glyphs);
+			Assert.Equal(0, shaped.Glyphs.Length);
+			Assert.Equal("", shaped.OriginalText);
 		}
 
-		[Test]
+		[Fact]
 		public void TextShaper_NullString()
 		{
 			var shaper = new ShaperWrapper();
 			var shaped = shaper.Shape(null, 32);
 
-			Assert.That(shaped, Is.Not.Null);
-			Assert.That(shaped.Glyphs, Is.Not.Null);
-			Assert.That(shaped.Glyphs.Length, Is.EqualTo(0));
-			Assert.That(shaped.OriginalText, Is.EqualTo(""));
+			Assert.NotNull(shaped);
+			Assert.NotNull(shaped.Glyphs);
+			Assert.Equal(0, shaped.Glyphs.Length);
+			Assert.Equal("", shaped.OriginalText);
 		}
 
-		[Test]
+		[Fact]
 		public void TextShaper_SimpleText()
 		{
 			// Create font system with BiDi disabled but text shaping enabled
 			var shaper = new ShaperWrapper();
 			var shaped = shaper.Shape("Hello", 32);
 
-			Assert.That(shaped, Is.Not.Null);
-			Assert.That(shaped.Glyphs, Is.Not.Null);
-			Assert.That(shaped.Glyphs.Length, Is.GreaterThan(0));
-			Assert.That(shaped.OriginalText, Is.EqualTo("Hello"));
-			Assert.That(shaped.FontSize, Is.EqualTo(32));
+			Assert.NotNull(shaped);
+			Assert.NotNull(shaped.Glyphs);
+			Assert.True(shaped.Glyphs.Length > 0);
+			Assert.Equal("Hello", shaped.OriginalText);
+			Assert.Equal(32, shaped.FontSize);
 
 			// Each glyph should have valid advance values
 			foreach (var glyph in shaped.Glyphs)
 			{
-				Assert.That(glyph.XAdvance, Is.GreaterThan(0));
+				Assert.True(glyph.XAdvance > 0);
 			}
 		}
 
-		[Test]
+		[Fact]
 		public void TextShaper_WithBiDiEnabled()
 		{
 			// Create font system with BiDi enabled
 			var shaper = new ShaperWrapper();
 			var shaped = shaper.Shape("Test", 32);
 
-			Assert.That(shaped, Is.Not.Null);
-			Assert.That(shaped.Glyphs, Is.Not.Null);
-			Assert.That(shaped.Glyphs.Length, Is.GreaterThan(0));
-			Assert.That(shaped.OriginalText, Is.EqualTo("Test"));
+			Assert.NotNull(shaped);
+			Assert.NotNull(shaped.Glyphs);
+			Assert.True(shaped.Glyphs.Length > 0);
+			Assert.Equal("Test", shaped.OriginalText);
 		}
 
-		[Test]
+		[Fact]
 		public void TextShaper_SurrogatePair_FormsSingleCluster()
 		{
 			var text = "😀"; // U+1F600 (surrogate pair)
 			var shaper = new ShaperWrapper();
 			var shaped = shaper.Shape(text, 32);
 
-			Assert.That(shaped.Glyphs.Length, Is.LessThanOrEqualTo(1), "Emoji surrogate pair should form a single cluster");
+			Assert.True(shaped.Glyphs.Length <= 1, "Emoji surrogate pair should form a single cluster");
 		}
 
-		[Test]
+		[Fact]
 		public void TextShaper_EmojiZWJSequence()
 		{
 			// Family: 👨‍👩‍👧‍👦 (multiple codepoints joined by ZWJ)
@@ -161,11 +161,11 @@ namespace FontStashSharp.Tests
 			var shaper = new ShaperWrapper();
 			var shaped = shaper.Shape(text, 32);
 
-			Assert.That(shaped.Glyphs.Length, Is.LessThan(text.Length),
+			Assert.True(shaped.Glyphs.Length < text.Length,
 					"ZWJ sequences should combine into fewer glyphs");
 		}
 
-		[Test]
+		[Fact]
 		public void ShapedText_PreservesOriginalText()
 		{
 			var originalText = "Testing 123";
@@ -173,10 +173,10 @@ namespace FontStashSharp.Tests
 			var shaper = new ShaperWrapper();
 			var shaped = shaper.Shape(originalText, 32);
 
-			Assert.That(shaped.OriginalText, Is.EqualTo(originalText));
+			Assert.Equal(originalText, shaped.OriginalText);
 		}
 
-		[Test]
+		[Fact]
 		public void ShapedGlyphs_HaveValidClusterIndices()
 		{
 			var text = "Hello";
@@ -187,8 +187,8 @@ namespace FontStashSharp.Tests
 			// All cluster indices should be within the text length
 			foreach (var glyph in shaped.Glyphs)
 			{
-				Assert.That(glyph.Cluster, Is.GreaterThanOrEqualTo(0));
-				Assert.That(glyph.Cluster, Is.LessThan(text.Length));
+				Assert.True(glyph.Cluster >= 0);
+				Assert.True(glyph.Cluster < text.Length);
 			}
 		}
 	}

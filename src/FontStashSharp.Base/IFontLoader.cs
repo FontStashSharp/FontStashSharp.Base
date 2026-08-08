@@ -2,6 +2,9 @@
 
 namespace FontStashSharp.Interfaces
 {
+	/// <summary>
+	/// Represents a font source that can be used to rasterize glyphs
+	/// </summary>
 	public interface IFontSource: IDisposable
 	{
 		/// <summary>
@@ -36,6 +39,7 @@ namespace FontStashSharp.Interfaces
 		/// <summary>
 		/// Renders a glyph 
 		/// </summary>
+		/// <param name="glyphId"></param>
 		/// <param name="buffer"></param>
 		/// <param name="fontSize"></param>
 		/// <param name="startIndex"></param>
@@ -66,6 +70,11 @@ namespace FontStashSharp.Interfaces
 	/// </summary>
 	public interface IFontLoader
 	{
+		/// <summary>
+		/// Loads a font from the specified data
+		/// </summary>
+		/// <param name="data">The font data</param>
+		/// <returns>The loaded font source</returns>
 		IFontSource Load(byte[] data);
 	}
 }
