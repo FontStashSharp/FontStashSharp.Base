@@ -5,7 +5,7 @@
     <PackageLicenseExpression>Zlib</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/FontStashSharp/FontStashSharp.Base</PackageProjectUrl>
     <RootNamespace>FontStashSharp</RootNamespace>
-    <Version>1.2.5</Version>
-    <TargetFrameworks>netstandard2.0;net471</TargetFrameworks>
+    <Version>1.2.6</Version>
+    <TargetFrameworks>netstandard2.0;net471;net8.0</TargetFrameworks>
   </PropertyGroup>
 </Project>
