@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.1.32328.378
+# Visual Studio Version 18
+VisualStudioVersion = 18.8.12105.206 oobstable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FontStashSharp.Base", "src\FontStashSharp.Base\FontStashSharp.Base.csproj", "{E83EF1DB-805B-4E31-BAE8-883E9E58BDF8}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FontStashSharp.TextShapers.HarfBuzz", "src\FontStashSharp.TextShapers.HarfBuzz\FontStashSharp.TextShapers.HarfBuzz.csproj", "{828611F9-AD5B-4335-914A-AACA1CE31AE3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FontStashSharp.Base.Tests", "tests\FontStashSharp.Base.Tests\FontStashSharp.Base.Tests.csproj", "{4248A167-3482-4670-B5C4-ECA3EB44B66C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FontStashSharp.Rasterizers.SharpAstro", "src\FontStashSharp.Rasterizers.SharpAstro\FontStashSharp.Rasterizers.SharpAstro.csproj", "{82688ECC-A0C8-4AFB-BC5C-149E1C51419A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{4248A167-3482-4670-B5C4-ECA3EB44B66C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4248A167-3482-4670-B5C4-ECA3EB44B66C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4248A167-3482-4670-B5C4-ECA3EB44B66C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82688ECC-A0C8-4AFB-BC5C-149E1C51419A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82688ECC-A0C8-4AFB-BC5C-149E1C51419A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82688ECC-A0C8-4AFB-BC5C-149E1C51419A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82688ECC-A0C8-4AFB-BC5C-149E1C51419A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
