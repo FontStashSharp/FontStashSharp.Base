@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net10.0-windows</TargetFrameworks>
+    <TargetFrameworks>net10.0-windows</TargetFrameworks>
     <RootNamespace>FontStashSharp.Base.Tests</RootNamespace>
   </PropertyGroup>
 
@@ -16,11 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\FontStashSharp.TextShapers.HarfBuzz\FontStashSharp.TextShapers.HarfBuzz.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
     <ProjectReference Include="..\..\src\FontStashSharp.Rasterizers.SharpAstro\FontStashSharp.Rasterizers.SharpAstro.csproj" />
+    <ProjectReference Include="..\..\src\FontStashSharp.TextShapers.HarfBuzz\FontStashSharp.TextShapers.HarfBuzz.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,6 @@
 using System;
 using Xunit;
 
-#if NET10_0_OR_GREATER
 using FontStashSharp.Interfaces;
 using FontStashSharp.Rasterizers.SharpAstro;
 
@@ -125,4 +124,3 @@ namespace FontStashSharp.Tests
 		}
 	}
 }
-#endif
