@@ -1,5 +1,6 @@
 ﻿using FontStashSharp.Interfaces;
 using System;
+using System.Runtime.InteropServices;
 using static StbTrueTypeSharp.StbTrueType;
 
 namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
@@ -92,17 +93,50 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 			y1 = y1Temp + _settings.KernelHeight;
 		}
 
-		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
+		public void RasterizeGlyphBitmap(FontRasterizationMode mode, int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
 		{
 			var scale = CalculateScale(fontSize);
 
 			fixed (byte* output = &buffer[startIndex])
 			{
-				stbtt_MakeGlyphBitmap(_font, output, outWidth, outHeight, outStride, scale, scale, glyphId);
-				if (_settings.KernelWidth > 0)
-					stbtt__v_prefilter(output, outWidth, outHeight, outStride, (uint)_settings.KernelWidth);
-				if (_settings.KernelHeight > 0)
-					stbtt__h_prefilter(output, outWidth, outHeight, outStride, (uint)_settings.KernelHeight);
+				switch (mode)
+				{
+					case FontRasterizationMode.Standard:
+						stbtt_MakeGlyphBitmap(_font, output, outWidth, outHeight, outStride, scale, scale, glyphId);
+						if (_settings.KernelWidth > 0)
+							stbtt__v_prefilter(output, outWidth, outHeight, outStride, (uint)_settings.KernelWidth);
+						if (_settings.KernelHeight > 0)
+							stbtt__h_prefilter(output, outWidth, outHeight, outStride, (uint)_settings.KernelHeight);
+						break;
+
+					case FontRasterizationMode.SDF:
+						byte* data = null;
+						byte[] result;
+						try
+						{
+							int w, h, x, y;
+							data = stbtt_GetGlyphSDF(_font, scale, glyphId, 0, 128, 64, &w, &h, &x, &y);
+							if (data == null)
+							{
+								throw new Exception($"SDF Rasterization Error. Glyph Id: {glyphId}");
+							}
+
+							for (var i = 0; i < w * h; ++i)
+							{
+								buffer[i] = data[i];
+							}
+						}
+						catch (Exception)
+						{
+							if (data != null)
+							{
+								Marshal.FreeHGlobal(new IntPtr(data));
+							}
+
+							throw;
+						}
+						break;
+				}
 			}
 		}
 

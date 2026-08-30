@@ -72,8 +72,13 @@ namespace FontStashSharp.Rasterizers.SharpAstro
 		}
 
 		/// <inheritdoc/>
-		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
+		public void RasterizeGlyphBitmap(FontRasterizationMode mode, int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
 		{
+			if (mode == FontRasterizationMode.SDF)
+			{
+				throw new NotImplementedException("FreeTypeSource doesn't support SDF.");
+			}
+
 			var bitmap = RenderGlyph(glyphId, fontSize);
 			if (bitmap.IsEmpty)
 			{
