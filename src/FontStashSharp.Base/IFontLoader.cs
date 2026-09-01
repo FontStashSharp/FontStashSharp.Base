@@ -3,25 +3,9 @@
 namespace FontStashSharp.Interfaces
 {
 	/// <summary>
-	/// Specifies the mode used to rasterize glyph bitmaps
-	/// </summary>
-	public enum FontRasterizationMode
-	{
-		/// <summary>
-		/// Standard anti-aliased rasterization
-		/// </summary>
-		Standard,
-
-		/// <summary>
-		/// Signed distance field (SDF) rasterization
-		/// </summary>
-		SDF
-	}
-
-	/// <summary>
 	/// Represents a font source that can be used to rasterize glyphs
 	/// </summary>
-	public interface IFontSource: IDisposable
+	public interface IFontSource : IDisposable
 	{
 		/// <summary>
 		/// Gets the font metrics for the specified font size
@@ -52,17 +36,28 @@ namespace FontStashSharp.Interfaces
 		void GetGlyphMetrics(int glyphId, float fontSize, out int advance, out int x0, out int y0, out int x1, out int y1);
 
 		/// <summary>
-		/// Rasterizes the glyph into a bitmap
+		/// Rasterizes a glyph into an 8-bit bitmap buffer
 		/// </summary>
-		/// <param name="mode">The rasterization mode</param>
 		/// <param name="glyphId">The glyph id</param>
 		/// <param name="fontSize">The font size</param>
-		/// <param name="buffer">The target buffer to write the bitmap into</param>
-		/// <param name="startIndex">The starting index in the buffer</param>
+		/// <param name="buffer">The destination buffer</param>
+		/// <param name="startIndex">The index in the buffer where the bitmap data starts</param>
 		/// <param name="outWidth">The width of the output bitmap</param>
 		/// <param name="outHeight">The height of the output bitmap</param>
-		/// <param name="outStride">The stride (number of bytes per row) of the output bitmap</param>
-		void RasterizeGlyphBitmap(FontRasterizationMode mode, int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride);
+		/// <param name="outStride">The number of bytes per row in the output buffer</param>
+		void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride);
+
+		/// <summary>
+		/// Rasterizes a glyph into a signed distance field (SDF) representation
+		/// </summary>
+		/// <param name="glyphId">The glyph id</param>
+		/// <param name="fontSize">The font size</param>
+		/// <param name="buffer">The destination buffer</param>
+		/// <param name="startIndex">The index in the buffer where the SDF data starts</param>
+		/// <param name="padding">The padding added around the glyph</param>
+		/// <param name="onedge_value">The value used on the glyph edge</param>
+		/// <param name="pixel_dist_scale">The scale of pixel distances</param>
+		void RasterizeGlyphSDF(int glyphId, float fontSize, byte[] buffer, int startIndex, int padding, byte onedge_value, float pixel_dist_scale);
 
 		/// <summary>
 		/// Gets the kerning advance between two adjacent glyphs

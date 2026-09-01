@@ -18,11 +18,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 			_settings = settings;
 		}
 
-		/// <summary>
-		/// Loads a font from byte data using StbTrueTypeSharp
-		/// </summary>
-		/// <param name="data">The font file data (TTF/OTF)</param>
-		/// <returns>A font source for rendering glyphs</returns>
+		/// <inheritdoc/>
 		public IFontSource Load(byte[] data)
 		{
 			return new StbTrueTypeSharpSource(data, _settings);

@@ -37,14 +37,14 @@
 		/// <summary>
 		/// Registers a ttf font
 		/// </summary>
-		/// <param name="data"></param>
+		/// <param name="data">The TrueType font data to register</param>
 		/// <returns>Assigned id</returns>
 		int RegisterTtfFont(byte[] data);
 
 		/// <summary>
 		/// Disposes and removes font from the text shaper
 		/// </summary>
-		/// <param name="id"></param>
+		/// <param name="id">The font ID to remove</param>
 		void RemoveFont(int id);
 
 		/// <summary>

@@ -11,6 +11,11 @@ namespace FontStashSharp.Rasterizers.FreeType
 		private GCHandle _memoryHandle;
 		private FT_FaceRec_* _faceHandle;
 
+		/// <summary>
+		/// Initializes a new instance of FreeTypeSource from font file data
+		/// </summary>
+		/// <param name="data">The font file data (TTF/OTF)</param>
+		/// <exception cref="FreeTypeException">Thrown when the FreeType library or the font face could not be initialized</exception>
 		public FreeTypeSource(byte[] data)
 		{
 			FT_Error err;
@@ -36,11 +41,18 @@ namespace FontStashSharp.Rasterizers.FreeType
 			_faceHandle = faceRef;
 		}
 
+		/// <summary>
+		/// Finalizes an instance of the FreeTypeSource class
+		/// </summary>
 		~FreeTypeSource()
 		{
 			Dispose(false);
 		}
 
+		/// <summary>
+		/// Releases unmanaged resources held by the font source
+		/// </summary>
+		/// <param name="disposing">Whether managed resources should also be released</param>
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_faceHandle != default)
@@ -53,12 +65,14 @@ namespace FontStashSharp.Rasterizers.FreeType
 				_memoryHandle.Free();
 		}
 
+		/// <inheritdoc/>
 		public void Dispose()
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 
+		/// <inheritdoc/>
 		public int? GetGlyphId(int codepoint)
 		{
 			var result = FT.FT_Get_Char_Index(_faceHandle, (UIntPtr)codepoint);
@@ -70,6 +84,7 @@ namespace FontStashSharp.Rasterizers.FreeType
 			return (int?)result;
 		}
 
+		/// <inheritdoc/>
 		public int GetGlyphKernAdvance(int previousGlyphId, int glyphId, float fontSize)
 		{
 			FT_Vector_ kerning;
@@ -81,6 +96,11 @@ namespace FontStashSharp.Rasterizers.FreeType
 			return (int)kerning.x >> 6;
 		}
 
+		/// <summary>
+		/// Sets the pixel sizes (resolution) of the face in 26.6 fixed-point units
+		/// </summary>
+		/// <param name="width">The pixel width</param>
+		/// <param name="height">The pixel height</param>
 		private void SetPixelSizes(float width, float height)
 		{
 			var err = FT.FT_Set_Pixel_Sizes(_faceHandle, (uint)width, (uint)height);
@@ -88,6 +108,10 @@ namespace FontStashSharp.Rasterizers.FreeType
 				throw new FreeTypeException(err);
 		}
 
+		/// <summary>
+		/// Loads the specified glyph into the face's glyph slot
+		/// </summary>
+		/// <param name="glyphId">The glyph id</param>
 		private void LoadGlyph(int glyphId)
 		{
 			var err = FT.FT_Load_Glyph(_faceHandle, (uint)glyphId, FT_LOAD.FT_LOAD_DEFAULT | FT_LOAD.FT_LOAD_COLOR);
@@ -95,11 +119,16 @@ namespace FontStashSharp.Rasterizers.FreeType
 				throw new FreeTypeException(err);
 		}
 
+		/// <summary>
+		/// Gets the currently loaded glyph slot instance
+		/// </summary>
+		/// <param name="glyph">The glyph slot structure</param>
 		private void GetCurrentGlyph(out FT_GlyphSlotRec_ glyph)
 		{
 			glyph = Marshal.PtrToStructure<FT_GlyphSlotRec_>((IntPtr)_faceHandle->glyph);
 		}
 
+		/// <inheritdoc/>
 		public void GetGlyphMetrics(int glyphId, float fontSize, out int advance, out int x0, out int y0, out int x1, out int y1)
 		{
 			SetPixelSizes(0, fontSize);
@@ -114,6 +143,7 @@ namespace FontStashSharp.Rasterizers.FreeType
 			y1 = y0 + ((int)glyph.metrics.height >> 6);
 		}
 
+		/// <inheritdoc/>
 		public void GetMetricsForSize(float fontSize, out int ascent, out int descent, out int lineHeight)
 		{
 			SetPixelSizes(0, fontSize);
@@ -124,13 +154,9 @@ namespace FontStashSharp.Rasterizers.FreeType
 			lineHeight = (int)sizeRec->metrics.height >> 6;
 		}
 
-		public void RasterizeGlyphBitmap(FontRasterizationMode mode, int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
+		/// <inheritdoc/>
+		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
 		{
-			if (mode == FontRasterizationMode.SDF)
-			{
-				throw new NotImplementedException("FreeTypeSource doesn't support SDF.");
-			}
-
 			SetPixelSizes(0, fontSize);
 			LoadGlyph(glyphId);
 
@@ -172,9 +198,17 @@ namespace FontStashSharp.Rasterizers.FreeType
 			}
 		}
 
+		/// <inheritdoc/>
+		public void RasterizeGlyphSDF(int glyphId, float fontSize, byte[] buffer, int startIndex, int padding, byte onedge_value, float pixel_dist_scale)
+		{
+			throw new NotImplementedException("FreeTypeSource doesn't support SDF.");
+		}
+
+		/// <inheritdoc/>
 		public float CalculateScaleForTextShaper(float fontSize)
 		{
 			return fontSize / (float)_faceHandle->units_per_EM;
 		}
+
 	}
 }

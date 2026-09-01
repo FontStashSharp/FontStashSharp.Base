@@ -20,11 +20,7 @@ namespace FontStashSharp
 		/// </summary>
 		public bool EnableBiDi { get; set; } = true;
 
-		/// <summary>
-		/// Registers a TrueType font for use in text shaping
-		/// </summary>
-		/// <param name="data">The font file data (TTF)</param>
-		/// <returns>The assigned font ID for reference</returns>
+		/// <inheritdoc/>
 		public int RegisterTtfFont(byte[] data)
 		{
 			var hbFont = new HarfBuzzFont(data);
@@ -37,10 +33,7 @@ namespace FontStashSharp
 			return result;
 		}
 
-		/// <summary>
-		/// Removes and disposes a previously registered font
-		/// </summary>
-		/// <param name="id">The font ID to remove</param>
+		/// <inheritdoc/>
 		public void RemoveFont(int id)
 		{
 			var font = _harfBuzzFonts[id];
@@ -118,13 +111,7 @@ namespace FontStashSharp
 			return runs;
 		}
 
-		/// <summary>
-		/// Shape text using HarfBuzz
-		/// </summary>
-		/// <param name="text">The text to shape</param>
-		/// <param name="fontSize">The font size</param>
-		/// <param name="infoProvider">Provides info for the text shaping</param>
-		/// <returns>Shaped text with glyph information</returns>
+		/// <inheritdoc/>
 		public ShapedText Shape(string text, float fontSize, ITextShapingInfoProvider infoProvider)
 		{
 			if (string.IsNullOrEmpty(text))

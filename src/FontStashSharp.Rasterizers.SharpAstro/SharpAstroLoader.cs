@@ -7,11 +7,7 @@ namespace FontStashSharp.Rasterizers.SharpAstro
 	/// </summary>
 	public class SharpAstroLoader : IFontLoader
 	{
-		/// <summary>
-		/// Loads a font from byte data using SharpAstro.Fonts
-		/// </summary>
-		/// <param name="data">The font file data (TTF/OTF)</param>
-		/// <returns>A font source for rendering glyphs</returns>
+		/// <inheritdoc/>
 		public IFontSource Load(byte[] data)
 		{
 			return new SharpAstroSource(data);

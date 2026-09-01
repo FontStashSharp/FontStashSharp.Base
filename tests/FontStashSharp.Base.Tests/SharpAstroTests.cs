@@ -56,7 +56,7 @@ namespace FontStashSharp.Tests
 				Assert.True(y0 < 0);
 
 				var buffer = new byte[width * height];
-				source.RasterizeGlyphBitmap(FontRasterizationMode.Standard, glyphId, 32f, buffer, 0, width, height, width);
+				source.RasterizeGlyphBitmap(glyphId, 32f, buffer, 0, width, height, width);
 
 				Assert.Contains(buffer, b => b > 0);
 				Assert.All(buffer, b => Assert.InRange(b, (byte)0, (byte)255));
@@ -75,7 +75,7 @@ namespace FontStashSharp.Tests
 				var height = y1 - y0;
 				var stride = width + 7;
 				var buffer = new byte[stride * height];
-				source.RasterizeGlyphBitmap(FontRasterizationMode.Standard, glyphId, 64f, buffer, 0, width, height, stride);
+				source.RasterizeGlyphBitmap(glyphId, 64f, buffer, 0, width, height, stride);
 
 				for (var y = 0; y < height; ++y)
 				{

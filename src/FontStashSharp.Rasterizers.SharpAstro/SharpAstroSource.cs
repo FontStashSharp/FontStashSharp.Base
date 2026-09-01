@@ -9,7 +9,7 @@ namespace FontStashSharp.Rasterizers.SharpAstro
 	/// <summary>
 	/// SharpAstro.Fonts font source implementation
 	/// </summary>
-	public class SharpAstroSource : IFontSource
+	internal class SharpAstroSource : IFontSource
 	{
 		private readonly OpenTypeFont _font;
 		private readonly Dictionary<long, int> _kernings = new Dictionary<long, int>();
@@ -72,13 +72,8 @@ namespace FontStashSharp.Rasterizers.SharpAstro
 		}
 
 		/// <inheritdoc/>
-		public void RasterizeGlyphBitmap(FontRasterizationMode mode, int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
+		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
 		{
-			if (mode == FontRasterizationMode.SDF)
-			{
-				throw new NotImplementedException("FreeTypeSource doesn't support SDF.");
-			}
-
 			var bitmap = RenderGlyph(glyphId, fontSize);
 			if (bitmap.IsEmpty)
 			{
@@ -96,6 +91,12 @@ namespace FontStashSharp.Rasterizers.SharpAstro
 					buffer[dstIndex + x] = bitmap.Alpha[srcIndex + x];
 				}
 			}
+		}
+
+		/// <inheritdoc/>
+		public void RasterizeGlyphSDF(int glyphId, float fontSize, byte[] buffer, int startIndex, int padding, byte onedge_value, float pixel_dist_scale)
+		{
+			throw new NotImplementedException("SharpAstroSource doesn't support SDF.");
 		}
 
 		/// <inheritdoc/>
