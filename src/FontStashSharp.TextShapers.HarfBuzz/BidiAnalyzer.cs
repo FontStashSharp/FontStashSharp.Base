@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using HarfBuzzSharp;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace FontStashSharp
 {
@@ -44,153 +48,322 @@ namespace FontStashSharp
 	/// </summary>
 	internal static class BiDiAnalyzer
 	{
-		/// <summary>
-		/// Segments text into runs of consistent directionality
-		/// </summary>
-		public static List<DirectionalRun> SegmentIntoDirectionalRuns(string text)
-		{
-			var runs = new List<DirectionalRun>();
-			int runStart = 0;
-			TextDirection? currentDirection = null;
+        private static readonly ConcurrentDictionary<int, UnicodeCategory> s_supplementaryCategoryCache = new ConcurrentDictionary<int, UnicodeCategory>();
 
-			for (int i = 0; i < text.Length;)
-			{
-				// Get the codepoint at position i
-				int codepoint;
-				int charCount;
-				if (i < text.Length - 1 && char.IsSurrogatePair(text, i))
-				{
-					codepoint = char.ConvertToUtf32(text, i);
-					charCount = 2;
-				}
-				else
-				{
-					codepoint = text[i];
-					charCount = 1;
-				}
+        // Common bracket pairs from BidiBrackets.txt (subset).
+        private static readonly Dictionary<int, int> s_openingToClosing = new Dictionary<int, int>
+            {
+                { '(', ')' }, { '[', ']' }, { '{', '}' },
+                { 0x2329, 0x232A },   // 〈 〉
+                { 0x3008, 0x3009 },   // 〈 〉
+                { 0x300A, 0x300B },   // 《 》
+                { 0x300C, 0x300D },   // 「 」
+                { 0x300E, 0x300F },   // 『 』
+                { 0x3010, 0x3011 },   // 【 】
+                { 0x3014, 0x3015 },   // 〔 〕
+                { 0x3016, 0x3017 },   // 〖 〗
+                { 0x3018, 0x3019 },   // 〘 〙
+                { 0x301A, 0x301B },   // 〚 〛
+                { 0xFE59, 0xFE5A },   // ﹙ ﹚
+                { 0xFE5B, 0xFE5C },   // ﹛ ﹜
+                { 0xFE5D, 0xFE5E },   // ﹝ ﹞
+                { 0xFF08, 0xFF09 },   // （ ）
+                { 0xFF3B, 0xFF3D },   // ［ ］
+                { 0xFF5B, 0xFF5D },   // ｛ ｝
+                { 0xFF5F, 0xFF60 },   // ｟ ｠
+                { 0xFF62, 0xFF63 },   // ｢ ｣
+            };
 
-				var charDirection = GetStrongDirection(codepoint);
+        private static readonly Dictionary<int, int> s_closingToOpening = BuildInverse(s_openingToClosing);
 
-				// Skip neutral characters as they belong to the current run
-				if (charDirection == null)
-				{
-					i += charCount;
-					continue;
-				}
+        private static Dictionary<int, int> BuildInverse(Dictionary<int, int> src)
+        {
+            var inv = new Dictionary<int, int>(src.Count);
+            foreach (var kv in src)
+                inv[kv.Value] = kv.Key;
+            return inv;
+        }
 
-				// If direction changes, start a new run
-				if (currentDirection.HasValue && charDirection != currentDirection)
-				{
-					// Close the current run
-					runs.Add(new DirectionalRun
-					{
-						Start = runStart,
-						Length = i - runStart,
-						Direction = currentDirection.Value
-					});
+        public static TextDirection DetectParagraphDirection(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return TextDirection.LTR;
 
-					runStart = i;
-					currentDirection = charDirection;
-				}
-				else if (!currentDirection.HasValue)
-				{
-					// First strong character - leading neutral characters become part of this run
-					currentDirection = charDirection;
-				}
+            for (int i = 0; i < text.Length; i++)
+            {
+                int cp;
 
-				i += charCount;
-			}
+                if (char.IsHighSurrogate(text[i]) &&
+                    i + 1 < text.Length &&
+                    char.IsLowSurrogate(text[i + 1]))
+                {
+                    cp = char.ConvertToUtf32(text[i], text[i + 1]);
+                    i++;
+                }
+                else
+                {
+                    cp = text[i];
+                }
 
-			// Add the final run
-			if (currentDirection.HasValue)
-			{
-				runs.Add(new DirectionalRun
-				{
-					Start = runStart,
-					Length = text.Length - runStart,
-					Direction = currentDirection.Value
-				});
-			}
-			else if (text.Length > runStart)
-			{
-				// Entire text is neutral - default to LTR
-				runs.Add(new DirectionalRun
-				{
-					Start = runStart,
-					Length = text.Length - runStart,
-					Direction = TextDirection.LTR
-				});
-			}
+                TextDirection? direction = GetStrongDirection(cp);
+                if (direction.HasValue)
+                    return direction.Value;
+            }
 
-			return runs;
-		}
+            return TextDirection.LTR;
+        }
+        /// <summary>
+        /// Segments text into runs of consistent directionality
+        /// </summary>
+        public static List<DirectionalRun> SegmentIntoDirectionalRuns(string text, TextDirection? baseDirection = null)
+        {
+            var runs = new List<DirectionalRun>();
+            if (string.IsNullOrEmpty(text))
+                return runs;
 
-		/// <summary>
-		/// Checks if a character is right-to-left
-		/// </summary>
-		/// <remarks>https://www.ssec.wisc.edu/~tomw/java/unicode.html</remarks>
-		private static bool IsRTL(int c)
-		{
-			// Hebrew block (U+0590 to U+05FF)
-			if (c >= 0x0590 && c <= 0x05FF) return true;
+            // ---- Pass 1: split into codepoints and classify each one. ------
+            var segStarts = new List<int>(text.Length);
+            var segCodepoints = new List<int>(text.Length);
+            var segDirs = new List<TextDirection?>(text.Length);
+            var segIsMark = new List<bool>(text.Length);
 
-			// Arabic block (U+0600 to U+06FF)
-			if (c >= 0x0600 && c <= 0x06FF) return true;
+            int i = 0;
+            while (i < text.Length)
+            {
+                int codepoint;
+                int charCount;
 
-			// Syriac (U+0700 to U+074F)
-			if (c >= 0x0700 && c <= 0x074F) return true;
+                if (i + 1 < text.Length && char.IsSurrogatePair(text, i))
+                {
+                    codepoint = char.ConvertToUtf32(text, i);
+                    charCount = 2;
+                }
+                else
+                {
+                    codepoint = text[i];
+                    charCount = 1;
+                }
 
-			// Thaana (U+0780 to U+07BF)
-			if (c >= 0x0780 && c <= 0x07BF) return true;
+                UnicodeCategory cat = GetCategory(codepoint);
 
-			// NKo (U+07C0 to U+07FF)
-			if (c >= 0x07C0 && c <= 0x07FF) return true;
+                segStarts.Add(i);
+                segCodepoints.Add(codepoint);
+                segDirs.Add(GetStrongDirection(codepoint));
+                segIsMark.Add(cat == UnicodeCategory.NonSpacingMark || cat == UnicodeCategory.EnclosingMark);
+                i += charCount;
+            }
 
-			// Samaritan (U+0800 to U+083F)
-			if (c >= 0x0800 && c <= 0x083F) return true;
+            int count = segStarts.Count;
+            var resolved = new TextDirection?[count];
+            for (int s = 0; s < count; s++)
+                resolved[s] = segDirs[s];
 
-			// Mandaic (U+0840 to U+085F)
-			if (c >= 0x0840 && c <= 0x085F) return true;
+            TextDirection paraDir = baseDirection ?? DetectParagraphDirection(text);
 
-			// Arabic Extended-A (U+08A0 to U+08FF)
-			if (c >= 0x08A0 && c <= 0x08FF) return true;
+            // ---- Pass 2: W1 — nonspacing marks inherit the preceding dir. --
+            for (int s = 1; s < count; s++)
+            {
+                if (segIsMark[s] && !resolved[s].HasValue && resolved[s - 1].HasValue)
+                    resolved[s] = resolved[s - 1];
+            }
 
-			// Hebrew presentation forms (U+FB1D to U+FB4F)
-			if (c >= 0xFB1D && c <= 0xFB4F) return true;
+            // ---- Pass 3: N0 — pair brackets with the enclosed strong dir. --
+            ResolveBracketPairs(segCodepoints, resolved, paraDir);
 
-			// Arabic presentation forms-A (U+FB50 to U+FDFF)
-			if (c >= 0xFB50 && c <= 0xFDFF) return true;
+            // ---- Pass 4: N1/N2 — resolve remaining neutral spans. ----------
+            for (int s = 0; s < count; s++)
+            {
+                if (resolved[s].HasValue)
+                    continue;
 
-			// Arabic presentation forms-B (U+FE70 to U+FEFC)
-			if (c >= 0xFE70 && c <= 0xFEFC) return true;
+                int spanStart = s;
+                int spanEnd = s;
+                while (spanEnd + 1 < count && !resolved[spanEnd + 1].HasValue)
+                    spanEnd++;
 
-			return false;
-		}
+                TextDirection prevDir = spanStart > 0 ? resolved[spanStart - 1].Value : paraDir;
+                TextDirection nextDir = spanEnd < count - 1 ? resolved[spanEnd + 1].Value : paraDir;
+                TextDirection neutralDir = prevDir == nextDir ? prevDir : paraDir;
 
-		/// <summary>
-		/// Checks if a character is neutral (takes direction from context)
-		/// </summary>
-		private static bool IsNeutral(char c)
-		{
-			return char.IsWhiteSpace(c) ||
-						 char.IsPunctuation(c) ||
-						 char.IsSymbol(c) ||
-						 char.IsSeparator(c);
-		}
+                for (int k = spanStart; k <= spanEnd; k++)
+                    resolved[k] = neutralDir;
 
-		/// <summary>
-		/// Gets the strong directionality of a character
-		/// </summary>
-		private static TextDirection? GetStrongDirection(int c)
-		{
-			if (IsRTL(c))
-				return TextDirection.RTL;
+                s = spanEnd;
+            }
 
-			// If not RTL and not neutral, assume LTR
-			if (!IsNeutral((char)c))
-				return TextDirection.LTR;
+            // ---- Pass 5: merge adjacent segments with the same direction. --
+            int curStart = 0;
+            TextDirection curDir = resolved[0].Value;
+            for (int s = 1; s < count; s++)
+            {
+                if (resolved[s].Value != curDir)
+                {
+                    int startChar = segStarts[curStart];
+                    int endChar = segStarts[s];
+                    runs.Add(new DirectionalRun
+                    {
+                        Start = startChar,
+                        Length = endChar - startChar,
+                        Direction = curDir
+                    });
+                    curStart = s;
+                    curDir = resolved[s].Value;
+                }
+            }
 
-			return null; // Neutral character
-		}
-	}
+            runs.Add(new DirectionalRun
+            {
+                Start = segStarts[curStart],
+                Length = text.Length - segStarts[curStart],
+                Direction = curDir
+            });
+
+            return runs;
+        }
+
+        /// <summary>
+        /// Checks if a character is right-to-left
+        /// </summary>
+        /// <remarks>https://www.ssec.wisc.edu/~tomw/java/unicode.html</remarks>
+        private static void ResolveBracketPairs(List<int> codepoints, TextDirection?[] resolved, TextDirection paraDir)
+        {
+            var stack = new Stack<int>();
+
+            for (int s = 0; s < codepoints.Count; s++)
+            {
+                int cp = codepoints[s];
+
+                if (s_openingToClosing.ContainsKey(cp))
+                {
+                    stack.Push(s);
+                    continue;
+                }
+
+                if (!s_closingToOpening.ContainsKey(cp))
+                    continue;
+
+                if (stack.Count == 0)
+                    continue;
+
+                int open = stack.Peek();
+                if (s_openingToClosing[codepoints[open]] != cp)
+                    continue; // mismatched close — ignore (N0 says unmatched)
+
+                stack.Pop();
+
+                bool hasR = false;
+                bool hasL = false;
+                for (int j = open + 1; j < s; j++)
+                {
+                    if (!resolved[j].HasValue)
+                        continue;
+
+                    if (resolved[j].Value == TextDirection.RTL)
+                        hasR = true;
+                    else
+                        hasL = true;
+                }
+
+                TextDirection? contentDir = null;
+                if (hasR && hasL) contentDir = paraDir;
+                else if (hasR) contentDir = TextDirection.RTL;
+                else if (hasL) contentDir = TextDirection.LTR;
+
+                if (contentDir.HasValue)
+                {
+                    resolved[open] = contentDir;
+                    resolved[s] = contentDir;
+                }
+            }
+        }
+
+        private static TextDirection? GetStrongDirection(int codePoint)
+        {
+            UnicodeCategory category = GetCategory(codePoint);
+
+            // NSM and Me never introduce strong direction (W1 handles inheritance)
+            if (category == UnicodeCategory.NonSpacingMark ||
+                category == UnicodeCategory.EnclosingMark)
+            {
+                return null;
+            }
+
+            // SpacingCombiningMark (Mc) is NOT strong — treat as neutral
+            if (category == UnicodeCategory.SpacingCombiningMark)
+            {
+                return null;
+            }
+
+            // Strong letters (L, R, AL)
+            bool isLetter =
+                category == UnicodeCategory.UppercaseLetter ||
+                category == UnicodeCategory.LowercaseLetter ||
+                category == UnicodeCategory.TitlecaseLetter ||
+                category == UnicodeCategory.ModifierLetter ||
+                category == UnicodeCategory.OtherLetter;
+
+            if (isLetter)
+            {
+                var dir = UnicodeFunctions.Default
+                    .GetScript(codePoint)
+                    .HorizontalDirection;
+
+                return dir == Direction.RightToLeft
+                    ? TextDirection.RTL
+                    : TextDirection.LTR;
+            }
+
+            // Digits → weak (EN/AN) → neutral here
+            if (category == UnicodeCategory.DecimalDigitNumber)
+                return TextDirection.LTR;
+
+            // Everything else → neutral
+            return null;
+        }
+
+        private static bool IsRightToLeft(Direction direction)
+        {
+            switch (direction)
+            {
+                case Direction.RightToLeft:
+                    return true;
+                // Add more cases here if your HarfBuzzSharp build exposes
+                // additional right-to-left Direction values.
+                default:
+                    return false;
+            }
+        }
+
+        private static UnicodeCategory GetCategory(int codePoint)
+        {
+            if (codePoint < 0 || codePoint > 0x10FFFF ||
+                (codePoint >= 0xD800 && codePoint <= 0xDFFF))
+            {
+                throw new ArgumentOutOfRangeException(nameof(codePoint));
+            }
+
+            if (codePoint <= 0xFFFF)
+                return CharUnicodeInfo.GetUnicodeCategory((char)codePoint);
+
+            return s_supplementaryCategoryCache.GetOrAdd(codePoint, cp => CharUnicodeInfo.GetUnicodeCategory(char.ConvertFromUtf32(cp), 0));
+        }
+
+        private static bool IsNeutral(int codePoint)
+        {
+            UnicodeCategory cat = GetCategory(codePoint);
+            switch (cat)
+            {
+                case UnicodeCategory.UppercaseLetter:
+                case UnicodeCategory.LowercaseLetter:
+                case UnicodeCategory.TitlecaseLetter:
+                case UnicodeCategory.ModifierLetter:
+                case UnicodeCategory.OtherLetter:
+                case UnicodeCategory.SpacingCombiningMark:
+                case UnicodeCategory.DecimalDigitNumber:
+                    return false;
+                default:
+                    return true;
+            }
+        }
+    }
 }

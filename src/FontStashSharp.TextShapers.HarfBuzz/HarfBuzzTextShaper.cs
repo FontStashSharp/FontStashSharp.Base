@@ -1,6 +1,7 @@
 ﻿using FontStashSharp.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace FontStashSharp
@@ -49,161 +50,247 @@ namespace FontStashSharp
 			public int FontSourceId;
 		}
 
-		private static List<FontRun> SegmentTextIntoFontRuns(string text, int start, int length, ITextShapingInfoProvider infoProvider)
-		{
-			var runs = new List<FontRun>();
-			int currentRunStart = start;
-			int? currentFontSourceId = null;
-			int end = start + length;
+        private struct Grapheme
+        {
+            public int Start;
+            public int Length;
+            public int FontSourceId;
+        }
+        private static List<Grapheme> BuildGraphemes(string text, ITextShapingInfoProvider infoProvider)
+        {
+            List<Grapheme> result = new List<Grapheme>();
+            TextElementEnumerator enumerator = StringInfo.GetTextElementEnumerator(text);
 
-			for (int i = start; i < end;)
-			{
-				// Get the codepoint at position i
-				int codepoint;
-				int charCount;
-				if (i < text.Length - 1 && char.IsSurrogatePair(text, i))
-				{
-					codepoint = char.ConvertToUtf32(text, i);
-					charCount = 2;
-				}
-				else
-				{
-					codepoint = text[i];
-					charCount = 1;
-				}
+            while (enumerator.MoveNext())
+            {
+                string element = enumerator.GetTextElement();
+                int start = enumerator.ElementIndex;
+                int length = element.Length;
 
-				// Find which font source has this codepoint
-				var fontSourceId = infoProvider.GetFontSourceId(codepoint) ?? 0;
+                int fontSourceId = 0;
 
-				// If this is a new font source, start a new run
-				if (currentFontSourceId == null || fontSourceId != currentFontSourceId.Value)
-				{
-					// Save the previous run if it exists
-					if (currentFontSourceId != null)
-					{
-						runs.Add(new FontRun
-						{
-							Start = currentRunStart,
-							Length = i - currentRunStart,
-							FontSourceId = currentFontSourceId.Value
-						});
-					}
+                int i = 0;
+                while (i < element.Length)
+                {
+                    int codepoint;
 
-					// Start new run
-					currentRunStart = i;
-					currentFontSourceId = fontSourceId;
-				}
+                    if (i < element.Length - 1 && char.IsSurrogatePair(element, i))
+                    {
+                        codepoint = char.ConvertToUtf32(element, i);
+                        i += 2;
+                    }
+                    else
+                    {
+                        codepoint = element[i];
+                        i += 1;
+                    }
 
-				i += charCount;
-			}
+                    int? fs = infoProvider.GetFontSourceId(codepoint);
+                    if (fs.HasValue)
+                    {
+                        fontSourceId = fs.Value;
+                        break;
+                    }
+                }
 
-			// Add the final run
-			if (currentFontSourceId != null)
-			{
-				runs.Add(new FontRun
-				{
-					Start = currentRunStart,
-					Length = end - currentRunStart,
-					FontSourceId = currentFontSourceId.Value
-				});
-			}
+                Grapheme g;
+                g.Start = start;
+                g.Length = length;
+                g.FontSourceId = fontSourceId;
 
-			return runs;
-		}
+                result.Add(g);
+            }
 
-		/// <inheritdoc/>
-		public ShapedText Shape(string text, float fontSize, ITextShapingInfoProvider infoProvider)
-		{
-			if (string.IsNullOrEmpty(text))
-			{
-				return new ShapedText
-				{
-					Glyphs = new ShapedGlyph[0],
-					OriginalText = text ?? string.Empty,
-					FontSize = fontSize
-				};
-			}
+            return result;
+        }
 
-			var allShapedGlyphs = new List<ShapedGlyph>(text.Length);
+        private static int FindFirstOverlapping(List<Grapheme> graphemes, int start)
+        {
+            int lo = 0;
+            int hi = graphemes.Count;
 
-			// Step 1: Analyze text for bidirectional runs (if enabled)
-			List<DirectionalRun> directionalRuns;
-			if (EnableBiDi)
-			{
-				directionalRuns = BiDiAnalyzer.SegmentIntoDirectionalRuns(text);
-			}
-			else
-			{
-				// BiDi disabled - treat entire text as single LTR run
-				directionalRuns = new List<DirectionalRun>
-				{
-					new DirectionalRun
-					{
-						Start = 0,
-						Length = text.Length,
-						Direction = TextDirection.LTR
-					}
-				};
-			}
+            while (lo < hi)
+            {
+                int mid = (lo + hi) / 2;
+                Grapheme g = graphemes[mid];
 
-			// Step 2: Process each directional run
-			foreach (var dirRun in directionalRuns)
-			{
-				// Step 3: Within each directional run, segment by font source
-				var fontRuns = SegmentTextIntoFontRuns(text, dirRun.Start, dirRun.Length, infoProvider);
+                if (g.Start + g.Length <= start)
+                    lo = mid + 1;
+                else
+                    hi = mid;
+            }
 
-				// Step 4: Shape each font run with its appropriate font
-				foreach (var fontRun in fontRuns)
-				{
-					var textShaperFontId = infoProvider.GetTextShaperFontId(fontRun.FontSourceId);
+            return lo;
+        }
+        private static List<FontRun> SegmentIntoFontRuns(List<Grapheme> graphemes, int start, int length)
+        {
+            List<FontRun> runs = new List<FontRun>();
+            if (graphemes == null || length <= 0)
+                return runs;
 
-					HarfBuzzFont hbFont;
-					if (!_harfBuzzFonts.TryGetValue(textShaperFontId, out hbFont))
-					{
-						throw new InvalidOperationException($"HarfBuzz font not available for font source {textShaperFontId}. Ensure font data is cached.");
-					}
+            int end = start + length;
 
-					var scale = infoProvider.CalculateScale(fontRun.FontSourceId, fontSize);
-					using (var buffer = new HarfBuzzSharp.Buffer())
-					{
-						// Add text run to buffer
-						var sb = new StringBuilder();
-						buffer.AddUtf16(text, fontRun.Start, fontRun.Length);
-						buffer.GuessSegmentProperties();
-						hbFont.Shape(buffer);
+            int index = FindFirstOverlapping(graphemes, start);
+            for (int i = index; i < graphemes.Count; i++)
+            {
+                Grapheme g = graphemes[i];
 
-						// Get the shaped output
-						var glyphInfos = buffer.GlyphInfos;
-						var glyphPositions = buffer.GlyphPositions;
+                if (g.Start >= end)
+                    break;
 
-						// Convert to our ShapedGlyph format
-						for (int i = 0; i < glyphInfos.Length; i++)
-						{
-							var info = glyphInfos[i];
-							var pos = glyphPositions[i];
+                if (g.Start < start || g.Start + g.Length > end)
+                    continue;
 
-							// After the shaping, info.Codepoint contains glyph id and not original unicode codepoint
-							allShapedGlyphs.Add(new ShapedGlyph
-							{
-								GlyphId = (int)info.Codepoint,
-								Cluster = (int)info.Cluster + fontRun.Start,
-								FontSourceId = fontRun.FontSourceId,
-								XAdvance = pos.XAdvance * scale,
-								YAdvance = pos.YAdvance * scale,
-								XOffset = pos.XOffset * scale,
-								YOffset = -pos.YOffset * scale
-							});
-						}
-					}
-				}
-			}
+                if (runs.Count > 0)
+                {
+                    int lastIndex = runs.Count - 1;
+                    FontRun last = runs[lastIndex];
 
-			return new ShapedText
-			{
-				Glyphs = allShapedGlyphs.ToArray(),
-				OriginalText = text,
-				FontSize = fontSize
-			};
-		}
-	}
+                    if (last.FontSourceId == g.FontSourceId &&
+                        last.Start + last.Length == g.Start)
+                    {
+                        last.Length += g.Length;
+                        runs[lastIndex] = last;
+                        continue;
+                    }
+                }
+
+                FontRun fr;
+                fr.Start = g.Start;
+                fr.Length = g.Length;
+                fr.FontSourceId = g.FontSourceId;
+
+                runs.Add(fr);
+            }
+
+            return runs;
+        }
+
+        private static bool IsRTLParagraph(List<DirectionalRun> runs)
+        {
+            if (runs == null)
+                return false;
+
+            for (int i = 0; i < runs.Count; i++)
+            {
+                if (runs[i].Direction == TextDirection.RTL)
+                    return true;
+
+                if (runs[i].Direction == TextDirection.LTR)
+                    return false;
+            }
+
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public ShapedText Shape(string text, float fontSize, ITextShapingInfoProvider infoProvider)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                ShapedText empty = new ShapedText();
+                empty.Glyphs = new ShapedGlyph[0];
+                empty.OriginalText = text ?? "";
+                empty.FontSize = fontSize;
+                return empty;
+            }
+
+            // 1. BIDI RUNS
+            List<DirectionalRun> dirRuns;
+            if (EnableBiDi)
+            {
+                dirRuns = BiDiAnalyzer.SegmentIntoDirectionalRuns(text);
+            }
+            else
+            {
+                dirRuns = new List<DirectionalRun>();
+                DirectionalRun dr;
+                dr.Start = 0;
+                dr.Length = text.Length;
+                dr.Direction = TextDirection.LTR;
+                dirRuns.Add(dr);
+            }
+
+            // 2. GRAPHEMES
+            List<Grapheme> graphemes = BuildGraphemes(text, infoProvider);
+
+            List<List<ShapedGlyph>> shapedRuns = new List<List<ShapedGlyph>>(dirRuns.Count);
+
+            // 3. SHAPE EACH RUN
+            for (int r = 0; r < dirRuns.Count; r++)
+            {
+                DirectionalRun dr = dirRuns[r];
+                bool isRtl = dr.Direction == TextDirection.RTL;
+
+                List<ShapedGlyph> glyphs = new List<ShapedGlyph>();
+                List<FontRun> fontRuns = SegmentIntoFontRuns(graphemes, dr.Start, dr.Length);
+
+                if (isRtl)
+                    fontRuns.Reverse();
+
+                for (int f = 0; f < fontRuns.Count; f++)
+                {
+                    FontRun fr = fontRuns[f];
+
+                    int fontId = infoProvider.GetTextShaperFontId(fr.FontSourceId);
+
+                    HarfBuzzFont hbFont;
+                    if (!_harfBuzzFonts.TryGetValue(fontId, out hbFont))
+                        throw new InvalidOperationException("Font not registered: " + fontId);
+
+                    float scale = infoProvider.CalculateScale(fr.FontSourceId, fontSize);
+
+                    using (HarfBuzzSharp.Buffer buffer = new HarfBuzzSharp.Buffer())
+                    {
+                        buffer.AddUtf16(text, fr.Start, fr.Length);
+
+                        buffer.Direction = isRtl
+                            ? HarfBuzzSharp.Direction.RightToLeft
+                            : HarfBuzzSharp.Direction.LeftToRight;
+
+                        buffer.GuessSegmentProperties();
+                        hbFont.Shape(buffer);
+
+                        HarfBuzzSharp.GlyphInfo[] infos = buffer.GlyphInfos;
+                        HarfBuzzSharp.GlyphPosition[] positions = buffer.GlyphPositions;
+
+                        for (int i = 0; i < infos.Length; i++)
+                        {
+                            HarfBuzzSharp.GlyphInfo info = infos[i];
+                            HarfBuzzSharp.GlyphPosition pos = positions[i];
+
+                            ShapedGlyph sg = new ShapedGlyph();
+                            sg.GlyphId = (int)info.Codepoint;
+                            sg.Cluster = (int)info.Cluster;
+                            sg.FontSourceId = fr.FontSourceId;
+                            sg.XAdvance = pos.XAdvance * scale;
+                            sg.YAdvance = pos.YAdvance * scale;
+                            sg.XOffset = pos.XOffset * scale;
+                            sg.YOffset = -pos.YOffset * scale;
+
+                            glyphs.Add(sg);
+                        }
+                    }
+                }
+
+                shapedRuns.Add(glyphs);
+            }
+
+            // 4. PARAGRAPH VISUAL ORDER
+            if (IsRTLParagraph(dirRuns))
+                shapedRuns.Reverse();
+
+            // 5. FLATTEN
+            List<ShapedGlyph> finalGlyphs = new List<ShapedGlyph>();
+            for (int i = 0; i < shapedRuns.Count; i++)
+                finalGlyphs.AddRange(shapedRuns[i]);
+
+            ShapedText shaped = new ShapedText();
+            shaped.Glyphs = finalGlyphs.ToArray();
+            shaped.OriginalText = text;
+            shaped.FontSize = fontSize;
+
+            return shaped;
+        }
+    }
 }
