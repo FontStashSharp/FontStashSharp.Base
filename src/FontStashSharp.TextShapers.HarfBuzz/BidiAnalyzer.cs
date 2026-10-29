@@ -50,7 +50,7 @@ namespace FontStashSharp
 	{
 		private static readonly ConcurrentDictionary<int, UnicodeCategory> s_supplementaryCategoryCache = new ConcurrentDictionary<int, UnicodeCategory>();
 
-		// Common bracket pairs from BidiBrackets.txt (subset).
+		// Common bracket pairs used by the N0 bracket-pairing pass.
 		private static readonly Dictionary<int, int> s_openingToClosing = new Dictionary<int, int>
 		{
 			{ '(', ')' }, { '[', ']' }, { '{', '}' },
