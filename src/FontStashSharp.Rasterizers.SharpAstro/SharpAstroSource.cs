@@ -72,7 +72,7 @@ namespace FontStashSharp.Rasterizers.SharpAstro
 		}
 
 		/// <inheritdoc/>
-		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
+		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outStride)
 		{
 			var bitmap = RenderGlyph(glyphId, fontSize);
 			if (bitmap.IsEmpty)
@@ -80,13 +80,11 @@ namespace FontStashSharp.Rasterizers.SharpAstro
 				return;
 			}
 
-			var width = Math.Min(outWidth, bitmap.Width);
-			var height = Math.Min(outHeight, bitmap.Height);
-			for (var y = 0; y < height; ++y)
+			for (var y = 0; y < bitmap.Height; ++y)
 			{
 				var srcIndex = y * bitmap.Width;
 				var dstIndex = startIndex + y * outStride;
-				for (var x = 0; x < width; ++x)
+				for (var x = 0; x < bitmap.Width; ++x)
 				{
 					buffer[dstIndex + x] = bitmap.Alpha[srcIndex + x];
 				}

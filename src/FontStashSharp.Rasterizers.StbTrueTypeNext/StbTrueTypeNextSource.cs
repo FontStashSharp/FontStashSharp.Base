@@ -124,10 +124,8 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 		/// <param name="fontSize">The font size</param>
 		/// <param name="buffer">The destination buffer</param>
 		/// <param name="startIndex">The index in the buffer where the bitmap data starts</param>
-		/// <param name="outWidth">The width of the output bitmap</param>
-		/// <param name="outHeight">The height of the output bitmap</param>
 		/// <param name="outStride">The number of bytes per row in the output buffer</param>
-		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
+		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outStride)
 		{
 			var scale = CalculateScale(fontSize);
 

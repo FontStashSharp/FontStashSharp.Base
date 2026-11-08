@@ -144,14 +144,17 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeSharp
 		/// <param name="fontSize">The font size</param>
 		/// <param name="buffer">The destination buffer</param>
 		/// <param name="startIndex">The index in the buffer where the bitmap data starts</param>
-		/// <param name="outWidth">The width of the output bitmap</param>
-		/// <param name="outHeight">The height of the output bitmap</param>
 		/// <param name="outStride">The number of bytes per row in the output buffer</param>
-		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
+		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outStride)
 		{
 			var scale = CalculateScale(fontSize);
 			fixed (byte* output = &buffer[startIndex])
 			{
+				int x0Temp, y0Temp, x1Temp, y1Temp;
+				stbtt_GetGlyphBitmapBox(_font, glyphId, scale, scale, &x0Temp, &y0Temp, &x1Temp, &y1Temp);
+
+				var outWidth = x1Temp - x0Temp;
+				var outHeight = y1Temp - y0Temp;
 				stbtt_MakeGlyphBitmap(_font, output, outWidth, outHeight, outStride, scale, scale, glyphId);
 				if (_settings.KernelWidth > 0)
 					stbtt__v_prefilter(output, outWidth, outHeight, outStride, (uint)_settings.KernelWidth);

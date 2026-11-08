@@ -128,19 +128,24 @@ namespace FontStashSharp.Rasterizers.FreeType
 			glyph = Marshal.PtrToStructure<FT_GlyphSlotRec_>((IntPtr)_faceHandle->glyph);
 		}
 
-		/// <inheritdoc/>
-		public void GetGlyphMetrics(int glyphId, float fontSize, out int advance, out int x0, out int y0, out int x1, out int y1)
+		private void GetGlyph(int glyphId, float fontSize, out int advance, out int x0, out int y0, out int x1, out int y1, out FT_GlyphSlotRec_ glyph)
 		{
 			SetPixelSizes(0, fontSize);
 			LoadGlyph(glyphId);
 
-			FT_GlyphSlotRec_ glyph;
 			GetCurrentGlyph(out glyph);
 			advance = (int)glyph.advance.x >> 6;
 			x0 = (int)glyph.metrics.horiBearingX >> 6;
 			y0 = -(int)glyph.metrics.horiBearingY >> 6;
 			x1 = x0 + ((int)glyph.metrics.width >> 6);
 			y1 = y0 + ((int)glyph.metrics.height >> 6);
+		}
+
+		/// <inheritdoc/>
+		public void GetGlyphMetrics(int glyphId, float fontSize, out int advance, out int x0, out int y0, out int x1, out int y1)
+		{
+			FT_GlyphSlotRec_ glyph;
+			GetGlyph(glyphId, fontSize, out advance, out x0, out y0, out x1, out y1, out glyph);
 		}
 
 		/// <inheritdoc/>
@@ -155,7 +160,7 @@ namespace FontStashSharp.Rasterizers.FreeType
 		}
 
 		/// <inheritdoc/>
-		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outWidth, int outHeight, int outStride)
+		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outStride)
 		{
 			SetPixelSizes(0, fontSize);
 			LoadGlyph(glyphId);
@@ -163,12 +168,16 @@ namespace FontStashSharp.Rasterizers.FreeType
 			FT.FT_Render_Glyph(_faceHandle->glyph, FT_Render_Mode_.FT_RENDER_MODE_NORMAL);
 
 			FT_GlyphSlotRec_ glyph;
-			GetCurrentGlyph(out glyph);
+
+			int advance, x0, y0, x1, y1;
+			GetGlyph(glyphId, fontSize, out advance, out x0, out y0, out x1, out y1, out glyph);
 			var ftbmp = glyph.bitmap;
 
+			var width = x1 - x0;
+			var height = y1 - y0;
 			fixed (byte* bptr = buffer)
 			{
-				for (var y = 0; y < outHeight; ++y)
+				for (var y = 0; y < height; ++y)
 				{
 					var pos = (y * outStride) + startIndex;
 
@@ -177,14 +186,14 @@ namespace FontStashSharp.Rasterizers.FreeType
 
 					if (ftbmp.pixel_mode == FT_Pixel_Mode_.FT_PIXEL_MODE_GRAY)
 					{
-						for (var x = 0; x < outWidth; ++x)
+						for (var x = 0; x < width; ++x)
 						{
 							*dst++ = *src++;
 						}
 					}
 					else if (ftbmp.pixel_mode == FT_Pixel_Mode_.FT_PIXEL_MODE_MONO)
 					{
-						for (var x = 0; x < outWidth; x += 8)
+						for (var x = 0; x < width; x += 8)
 						{
 							var bits = *src++;
 							for (int b = 0; b < Math.Min(8, ftbmp.width - x); b++)
