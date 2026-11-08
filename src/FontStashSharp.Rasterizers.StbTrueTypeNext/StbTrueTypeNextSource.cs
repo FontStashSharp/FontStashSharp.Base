@@ -110,12 +110,11 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 			_font.GetGlyphHMetrics(glyphId, out advanceTemp, out lsbTemp);
 			advance = (int)(advanceTemp * scale + 0.5f);
 
-			int x0Temp, y0Temp, x1Temp, y1Temp;
-			_font.GetGlyphBitmapBox(glyphId, scale, scale, out x0Temp, out y0Temp, out x1Temp, out y1Temp);
-			x0 = x0Temp;
-			y0 = y0Temp;
-			x1 = x1Temp + _settings.KernelWidth;
-			y1 = y1Temp + _settings.KernelHeight;
+			var box = _font.GetGlyphBoxInPixels(glyphId, scale, scale) ?? STBGlyphBitmapBox.Zero;
+			x0 = box.X0;
+			y0 = box.Y0;
+			x1 = box.X1 + _settings.KernelWidth;
+			y1 = box.Y1 + _settings.KernelHeight;
 		}
 
 		/// <summary>
@@ -132,9 +131,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 		{
 			var scale = CalculateScale(fontSize);
 
-			float subX, subY;
-			_font.MakeGlyphBitmapSubpixelPrefilter(buffer, startIndex, outWidth, outHeight, outStride, scale, scale, 0, 0,
-				_settings.KernelWidth, _settings.KernelHeight, out subX, out subY, glyphId);
+			_font.DrawGlyphOnBitmap(glyphId, buffer, startIndex, outStride, scale, scale);
 		}
 
 		/// <summary>
