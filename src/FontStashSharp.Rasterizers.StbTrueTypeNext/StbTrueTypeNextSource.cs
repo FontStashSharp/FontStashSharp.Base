@@ -61,13 +61,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 		/// <returns>The scale factor</returns>
 		private float CalculateScale(float size) => _settings.UseEmToPixelsScale ? _font.ScaleForMappingEmToPixels(size) : _font.ScaleForPixelHeight(size);
 
-		/// <summary>
-		/// Gets the font metrics for the specified font size
-		/// </summary>
-		/// <param name="fontSize">The font size</param>
-		/// <param name="ascent">The distance from the baseline to the top of the em box</param>
-		/// <param name="descent">The distance from the baseline to the bottom of the em box</param>
-		/// <param name="lineHeight">The total line height</param>
+		/// <inheritdoc/>
 		public void GetMetricsForSize(float fontSize, out int ascent, out int descent, out int lineHeight)
 		{
 			var scale = CalculateScale(fontSize);
@@ -76,11 +70,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 			lineHeight = (int)(_lineHeight * scale + 0.5f);
 		}
 
-		/// <summary>
-		/// Gets the glyph id for the specified codepoint
-		/// </summary>
-		/// <param name="codepoint">The Unicode codepoint</param>
-		/// <returns>The glyph id, or null if the codepoint is not present in the font</returns>
+		/// <inheritdoc/>
 		public int? GetGlyphId(int codepoint)
 		{
 			var result = _font.FindGlyphIndex(codepoint);
@@ -92,16 +82,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 			return result;
 		}
 
-		/// <summary>
-		/// Gets the glyph metrics for the specified glyph
-		/// </summary>
-		/// <param name="glyphId">The glyph id</param>
-		/// <param name="fontSize">The font size</param>
-		/// <param name="advance">The horizontal advance of the glyph</param>
-		/// <param name="x0">The x coordinate of the top-left corner of the glyph bounding box</param>
-		/// <param name="y0">The y coordinate of the top-left corner of the glyph bounding box</param>
-		/// <param name="x1">The x coordinate of the bottom-right corner of the glyph bounding box</param>
-		/// <param name="y1">The y coordinate of the bottom-right corner of the glyph bounding box</param>
+		/// <inheritdoc/>
 		public void GetGlyphMetrics(int glyphId, float fontSize, out int advance, out int x0, out int y0, out int x1, out int y1)
 		{
 			var scale = CalculateScale(fontSize);
@@ -117,14 +98,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 			y1 = box.Y1 + _settings.KernelHeight;
 		}
 
-		/// <summary>
-		/// Rasterizes a glyph into an 8-bit bitmap buffer
-		/// </summary>
-		/// <param name="glyphId">The glyph id</param>
-		/// <param name="fontSize">The font size</param>
-		/// <param name="buffer">The destination buffer</param>
-		/// <param name="startIndex">The index in the buffer where the bitmap data starts</param>
-		/// <param name="outStride">The number of bytes per row in the output buffer</param>
+		/// <inheritdoc/>
 		public void RasterizeGlyphBitmap(int glyphId, float fontSize, byte[] buffer, int startIndex, int outStride)
 		{
 			var scale = CalculateScale(fontSize);
@@ -132,16 +106,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 			_font.DrawGlyphOnBitmap(glyphId, buffer, startIndex, outStride, scale, scale);
 		}
 
-		/// <summary>
-		/// Rasterizes a glyph into a signed distance field (SDF) representation
-		/// </summary>
-		/// <param name="glyphId">The glyph id</param>
-		/// <param name="fontSize">The font size</param>
-		/// <param name="buffer">The destination buffer</param>
-		/// <param name="startIndex">The index in the buffer where the SDF data starts</param>
-		/// <param name="padding">The padding added around the glyph</param>
-		/// <param name="onedge_value">The value used on the glyph edge</param>
-		/// <param name="pixel_dist_scale">The scale of pixel distances</param>
+		/// <inheritdoc/>
 		public void RasterizeGlyphSDF(int glyphId, float fontSize, byte[] buffer, int startIndex, int padding, byte onedge_value, float pixel_dist_scale)
 		{
 			var scale = CalculateScale(fontSize);
@@ -157,13 +122,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 			}
 		}
 
-		/// <summary>
-		/// Gets the kerning advance between two adjacent glyphs
-		/// </summary>
-		/// <param name="glyph1">The glyph id of the first glyph</param>
-		/// <param name="glyph2">The glyph id of the second glyph</param>
-		/// <param name="fontSize">The font size</param>
-		/// <returns>The kerning advance</returns>
+		/// <inheritdoc/>
 		public int GetGlyphKernAdvance(int glyph1, int glyph2, float fontSize)
 		{
 			var scale = CalculateScale(fontSize);
@@ -172,11 +131,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 			return (int)(result * scale);
 		}
 
-		/// <summary>
-		/// Calculates the scale used by the text shaper for the specified font size
-		/// </summary>
-		/// <param name="fontSize">The font size</param>
-		/// <returns>The calculated scale</returns>
+		/// <inheritdoc/>
 		public float CalculateScaleForTextShaper(float fontSize) =>
 			_settings.UseEmToPixelsScale ? _font.ScaleForMappingEmToPixels(fontSize) : _font.ScaleForPixelHeight(fontSize);
 	}
