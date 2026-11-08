@@ -5,6 +5,8 @@ on: [workflow_dispatch]
 jobs:
   BuildAndPublish:
     runs-on: windows-latest
+    permissions:
+      id-token: write  # enable GitHub OIDC token issuance for this job
 
     steps:
     - uses: actions/checkout@v2
@@ -18,20 +20,26 @@ jobs:
       run: dotnet build FontStashSharp.Base.sln --configuration Release
     - name: Test
       run: dotnet test FontStashSharp.Base.sln
-    - name: Install NuGet
-      uses: NuGet/setup-nuget@v1
+    - name: NuGet login (OIDC → temp API key)
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: ${{secrets.NUGET_USER}}
     - name: Publish FontStashSharp.Base to NuGet
-      run: nuget.exe push src\FontStashSharp.Base\bin\Release\FontStashSharp.Base.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+      run: nuget.exe push src\FontStashSharp.Base\bin\Release\FontStashSharp.Base.*.nupkg ${{steps.login.outputs.NUGET_API_KEY}} -Source https://api.nuget.org/v3/index.json
       continue-on-error: true
     - name: Publish FontStashSharp.Rasterizers.StbTrueTypeSharp to NuGet
-      run: nuget.exe push src\FontStashSharp.Rasterizers.StbTrueTypeSharp\bin\Release\FontStashSharp.Rasterizers.StbTrueTypeSharp.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+      run: nuget.exe push src\FontStashSharp.Rasterizers.StbTrueTypeSharp\bin\Release\FontStashSharp.Rasterizers.StbTrueTypeSharp.*.nupkg ${{steps.login.outputs.NUGET_API_KEY}} -Source https://api.nuget.org/v3/index.json
+      continue-on-error: true
+    - name: Publish FontStashSharp.Rasterizers.StbTrueTypeNext to NuGet
+      run: nuget.exe push src\FontStashSharp.Rasterizers.StbTrueTypeNext\bin\Release\FontStashSharp.Rasterizers.StbTrueTypeNext.*.nupkg ${{steps.login.outputs.NUGET_API_KEY}} -Source https://api.nuget.org/v3/index.json
       continue-on-error: true
     - name: Publish FontStashSharp.Rasterizers.FreeType to NuGet
-      run: nuget.exe push src\FontStashSharp.Rasterizers.FreeType\bin\Release\FontStashSharp.Rasterizers.FreeType.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+      run: nuget.exe push src\FontStashSharp.Rasterizers.FreeType\bin\Release\FontStashSharp.Rasterizers.FreeType.*.nupkg ${{steps.login.outputs.NUGET_API_KEY}} -Source https://api.nuget.org/v3/index.json
       continue-on-error: true
     - name: Publish FontStashSharp.Rasterizers.SharpAstro to NuGet
-      run: nuget.exe push src\FontStashSharp.Rasterizers.SharpAstro\bin\Release\FontStashSharp.Rasterizers.SharpAstro.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+      run: nuget.exe push src\FontStashSharp.Rasterizers.SharpAstro\bin\Release\FontStashSharp.Rasterizers.SharpAstro.*.nupkg ${{steps.login.outputs.NUGET_API_KEY}} -Source https://api.nuget.org/v3/index.json
       continue-on-error: true
     - name: Publish FontStashSharp.TextShapers.HarfBuzz to NuGet
-      run: nuget.exe push src\FontStashSharp.TextShapers.HarfBuzz\bin\Release\FontStashSharp.TextShapers.HarfBuzz.*.nupkg ${{secrets.NUGET_APIKEY}} -Source https://api.nuget.org/v3/index.json
+      run: nuget.exe push src\FontStashSharp.TextShapers.HarfBuzz\bin\Release\FontStashSharp.TextShapers.HarfBuzz.*.nupkg ${{steps.login.outputs.NUGET_API_KEY}} -Source https://api.nuget.org/v3/index.json
       continue-on-error: true      
