@@ -103,7 +103,7 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 		{
 			var scale = CalculateScale(fontSize);
 
-			_font.DrawGlyphOnBitmap(glyphId, buffer, startIndex, outStride, scale, scale);
+			_font.DrawGlyphOnBitmap(glyphId, buffer, startIndex, outStride, scale, scale, 0, 0, _settings.KernelWidth, _settings.KernelHeight);
 		}
 
 		/// <inheritdoc/>
