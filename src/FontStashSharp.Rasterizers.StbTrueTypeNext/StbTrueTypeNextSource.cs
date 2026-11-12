@@ -30,15 +30,6 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 
 			_font = new STBFont(data);
 
-			if (settings.UseOldRasterizer)
-			{
-				_font.RasterizerVersion = STBRasterizerVersion.V1;
-			}
-			else
-			{
-				_font.RasterizerVersion = STBRasterizerVersion.V2;
-			}
-
 			_settings = settings;
 
 			int ascent, descent, lineGap;
@@ -103,7 +94,8 @@ namespace FontStashSharp.Rasterizers.StbTrueTypeNext
 		{
 			var scale = CalculateScale(fontSize);
 
-			_font.DrawGlyphOnBitmap(glyphId, buffer, startIndex, outStride, scale, scale, 0, 0, _settings.KernelWidth, _settings.KernelHeight);
+			var rasterizerVersion = _settings.UseOldRasterizer ? STBRasterizerVersion.V1 : STBRasterizerVersion.V2;
+			_font.DrawGlyphOnBitmap(glyphId, buffer, startIndex, outStride, scale, scale, 0, 0, _settings.KernelWidth, _settings.KernelHeight, rasterizerVersion);
 		}
 
 		/// <inheritdoc/>
